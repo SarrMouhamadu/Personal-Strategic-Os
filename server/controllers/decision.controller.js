@@ -1,5 +1,16 @@
 const fs = require('fs');
 const path = require('path');
+const Joi = require('joi');
+
+const decisionSchema = Joi.object({
+    title: Joi.string().min(3).required(),
+    context: Joi.string().required(),
+    options: Joi.array().items(Joi.string()).required(),
+    outcome: Joi.string().required(),
+    impactScore: Joi.number().min(0).max(10).required(),
+    date: Joi.string().isoDate().optional(),
+    tags: Joi.array().items(Joi.string()).optional()
+});
 
 const decisionsFilePath = path.join(__dirname, '../data/decisions.json');
 
@@ -16,19 +27,26 @@ const saveDecisionsData = (decisions) => {
     fs.writeFileSync(decisionsFilePath, JSON.stringify(decisions, null, 2));
 };
 
-exports.getDecisions = (req, res) => {
+exports.getDecisions = (req, res, next) => {
     try {
         const userId = req.user.id;
         const decisions = getDecisionsData();
         const userDecisions = decisions.filter(d => d.userId === userId);
         res.json(userDecisions);
     } catch (error) {
-        res.status(500).json({ message: 'Error retrieving decisions', error: error.message });
+        next(error);
     }
 };
 
-exports.createDecision = (req, res) => {
+exports.createDecision = (req, res, next) => {
     try {
+        const { error } = decisionSchema.validate(req.body);
+        if (error) {
+            const err = new Error(error.details[0].message);
+            err.statusCode = 400;
+            throw err;
+        }
+
         const userId = req.user.id;
         const decisionData = req.body;
         const decisions = getDecisionsData();
@@ -44,6 +62,6 @@ exports.createDecision = (req, res) => {
         saveDecisionsData(decisions);
         res.status(201).json(newDecision);
     } catch (error) {
-        res.status(500).json({ message: 'Error creating decision', error: error.message });
+        next(error);
     }
 };
