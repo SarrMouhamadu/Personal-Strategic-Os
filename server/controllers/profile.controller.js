@@ -1,5 +1,15 @@
 const fs = require('fs');
 const path = require('path');
+const Joi = require('joi');
+
+const profileSchema = Joi.object({
+    fullName: Joi.string().min(2).required(),
+    tagline: Joi.string().allow(''),
+    bio: Joi.string().allow(''),
+    roles: Joi.array().items(Joi.string()),
+    skills: Joi.array().items(Joi.string()),
+    socialLinks: Joi.object().optional()
+});
 
 const profilesFilePath = path.join(__dirname, '../data/profiles.json');
 
@@ -16,14 +26,13 @@ const saveProfiles = (profiles) => {
     fs.writeFileSync(profilesFilePath, JSON.stringify(profiles, null, 2));
 };
 
-exports.getProfile = (req, res) => {
+exports.getProfile = (req, res, next) => {
     try {
         const userId = req.user.id;
         const profiles = getProfiles();
         const profile = profiles.find(p => p.userId === userId);
 
         if (!profile) {
-            // Return empty structure or default
             return res.json({
                 userId,
                 fullName: 'New User',
@@ -36,12 +45,19 @@ exports.getProfile = (req, res) => {
 
         res.json(profile);
     } catch (error) {
-        res.status(500).json({ message: 'Error retrieving profile', error: error.message });
+        next(error);
     }
 };
 
-exports.updateProfile = (req, res) => {
+exports.updateProfile = (req, res, next) => {
     try {
+        const { error } = profileSchema.validate(req.body);
+        if (error) {
+            const err = new Error(error.details[0].message);
+            err.statusCode = 400;
+            throw err;
+        }
+
         const userId = req.user.id;
         const profileData = req.body;
         const profiles = getProfiles();
@@ -58,6 +74,6 @@ exports.updateProfile = (req, res) => {
         saveProfiles(profiles);
         res.json(updatedProfile);
     } catch (error) {
-        res.status(500).json({ message: 'Error updating profile', error: error.message });
+        next(error);
     }
 };
