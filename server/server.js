@@ -34,12 +34,18 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+
+// Rate limiting - DISABLED in development to avoid blocking during testing
+// In production, uncomment and configure appropriately
+/*
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 1000, // limit each IP to 1000 requests per windowMs
     message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 app.use('/api/', limiter);
+*/
+console.log('[Server] Rate limiting DISABLED for development');
 
 app.use(bodyParser.json());
 app.use(morgan('dev'));
