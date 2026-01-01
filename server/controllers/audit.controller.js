@@ -19,7 +19,7 @@ exports.getAllLogs = (req, res) => {
         const sortedLogs = logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         res.json(sortedLogs);
     } catch (error) {
-        res.status(500).json({ message: 'Error retrieving audit logs', error: error.message });
+        next(error);
     }
 };
 
@@ -36,6 +36,6 @@ exports.getSecurityReport = (req, res) => {
             latestLogs: logs.slice(-5)
         });
     } catch (error) {
-        res.status(500).json({ message: 'Error generating security report', error: error.message });
+        next(error);
     }
 };
