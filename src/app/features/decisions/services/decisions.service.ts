@@ -31,4 +31,16 @@ export class DecisionsService {
             headers: { 'Authorization': `Bearer ${this.auth.token()}` }
         });
     }
+
+    updateDecision(id: string, decision: Partial<Decision>): Observable<Decision> {
+        return this.http.put<Decision>(`${this.apiUrl}/${id}`, decision, {
+            headers: { 'Authorization': `Bearer ${this.auth.token()}` }
+        });
+    }
+
+    deleteDecision(id: string): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/${id}`, {
+            headers: { 'Authorization': `Bearer ${this.auth.token()}` }
+        });
+    }
 }

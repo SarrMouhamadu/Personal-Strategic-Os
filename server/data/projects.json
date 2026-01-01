@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "name": "Dating platform",
+    "tagline": "« La rencontre repensée autour de l’authenticité. »  « Plus qu’un match, une connexion humaine. »",
+    "status": "BUILD",
+    "accessLevel": "TEAM",
+    "description": "Nous développons une plateforme de rencontre et de confession anonyme qui permet aux utilisateurs de se connecter autrement. Elle offre un espace sécurisé pour s’exprimer librement, créer des liens authentiques et faire des rencontres basées sur l’écoute, le respect et la confiance.",
+    "techStack": [
+      "Angular"
+    ],
+    "id": "1767303489732",
+    "userId": "1",
+    "createdAt": "2026-01-01T21:38:09.732Z"
+  }
+]
