@@ -1,68 +1,66 @@
 import { Routes } from '@angular/router';
-import { ProfilePageComponent } from './features/identity/pages/profile-page/profile-page.component';
-import { GoalsDashboardComponent } from './features/goals/pages/goals-dashboard/goals-dashboard.component';
-import { DecisionsPageComponent } from './features/decisions/pages/decisions-page/decisions-page.component';
-import { ProjectsListPageComponent } from './features/projects/pages/projects-list-page/projects-list-page.component';
-import { ProjectDetailPageComponent } from './features/projects/pages/project-detail-page/project-detail-page.component';
-import { FinancialSimulatorComponent } from './features/finance/pages/financial-simulator/financial-simulator.component';
-import { NetworkPageComponent } from './features/network/pages/network-page/network-page.component';
-import { ContactDetailPageComponent } from './features/network/pages/contact-detail-page/contact-detail-page.component';
-import { OpportunitiesPipelineComponent } from './features/network/pages/opportunities-pipeline/opportunities-pipeline.component';
-import { LibraryPageComponent } from './features/knowledge/pages/library-page/library-page.component';
-import { DashboardPageComponent } from './features/dashboard/pages/dashboard-page/dashboard-page.component';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
     {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
+        path: 'login',
+        loadComponent: () => import('./features/auth/pages/login-page/login-page.component').then(m => m.LoginPageComponent)
     },
     {
         path: 'dashboard',
-        loadComponent: () => import('./features/dashboard/pages/dashboard-page/dashboard-page.component').then(m => m.DashboardPageComponent)
+        loadComponent: () => import('./features/dashboard/pages/dashboard-page/dashboard-page.component').then(m => m.DashboardPageComponent),
+        canActivate: [authGuard]
     },
     {
         path: 'identity',
-        loadComponent: () => import('./features/identity/pages/profile-page/profile-page.component').then(m => m.ProfilePageComponent)
+        loadComponent: () => import('./features/identity/pages/profile-page/profile-page.component').then(m => m.ProfilePageComponent),
+        canActivate: [authGuard]
     },
     {
         path: 'goals',
-        loadComponent: () => import('./features/goals/pages/goals-dashboard/goals-dashboard.component').then(m => m.GoalsDashboardComponent)
+        loadComponent: () => import('./features/goals/pages/goals-dashboard/goals-dashboard.component').then(m => m.GoalsDashboardComponent),
+        canActivate: [authGuard]
     },
     {
         path: 'decisions',
-        loadComponent: () => import('./features/decisions/pages/decisions-page/decisions-page.component').then(m => m.DecisionsPageComponent)
+        loadComponent: () => import('./features/decisions/pages/decisions-page/decisions-page.component').then(m => m.DecisionsPageComponent),
+        canActivate: [authGuard]
     },
     {
         path: 'projects',
-        loadComponent: () => import('./features/projects/pages/projects-list-page/projects-list-page.component').then(m => m.ProjectsListPageComponent)
+        loadComponent: () => import('./features/projects/pages/projects-list-page/projects-list-page.component').then(m => m.ProjectsListPageComponent),
+        canActivate: [authGuard]
     },
     {
         path: 'projects/:id',
-        loadComponent: () => import('./features/projects/pages/project-detail-page/project-detail-page.component').then(m => m.ProjectDetailPageComponent)
+        loadComponent: () => import('./features/projects/pages/project-detail-page/project-detail-page.component').then(m => m.ProjectDetailPageComponent),
+        canActivate: [authGuard]
     },
     {
         path: 'finance',
-        loadComponent: () => import('./features/finance/pages/financial-simulator/financial-simulator.component').then(m => m.FinancialSimulatorComponent)
+        loadComponent: () => import('./features/finance/pages/financial-simulator/financial-simulator.component').then(m => m.FinancialSimulatorComponent),
+        canActivate: [authGuard]
     },
     {
         path: 'network',
-        loadComponent: () => import('./features/network/pages/network-page/network-page.component').then(m => m.NetworkPageComponent)
+        loadComponent: () => import('./features/network/pages/network-page/network-page.component').then(m => m.NetworkPageComponent),
+        canActivate: [authGuard]
     },
     {
         path: 'network/:id',
-        loadComponent: () => import('./features/network/pages/contact-detail-page/contact-detail-page.component').then(m => m.ContactDetailPageComponent)
+        loadComponent: () => import('./features/network/pages/contact-detail-page/contact-detail-page.component').then(m => m.ContactDetailPageComponent),
+        canActivate: [authGuard]
     },
     {
         path: 'opportunities',
-        loadComponent: () => import('./features/network/pages/opportunities-pipeline/opportunities-pipeline.component').then(m => m.OpportunitiesPipelineComponent)
+        loadComponent: () => import('./features/network/pages/opportunities-pipeline/opportunities-pipeline.component').then(m => m.OpportunitiesPipelineComponent),
+        canActivate: [authGuard]
     },
     {
         path: 'knowledge',
-        loadComponent: () => import('./features/knowledge/pages/library-page/library-page.component').then(m => m.LibraryPageComponent)
+        loadComponent: () => import('./features/knowledge/pages/library-page/library-page.component').then(m => m.LibraryPageComponent),
+        canActivate: [authGuard]
     },
-    {
-        path: '**',
-        redirectTo: 'dashboard'
-    }
+    { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    { path: '**', redirectTo: 'dashboard' }
 ];

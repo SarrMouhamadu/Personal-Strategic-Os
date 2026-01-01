@@ -1,23 +1,24 @@
-export type ContactTag = 'INVESTOR' | 'MENTOR' | 'CLIENT' | 'PARTNER' | 'TALENT';
-
 export interface Interaction {
     id: string;
-    date: Date;
+    date: string; // ISO String
     type: 'MEETING' | 'EMAIL' | 'CALL' | 'LUNCH';
-    notes: string;
+    summary: string;
+    followUpRequired?: boolean;
 }
 
 export interface Contact {
     id: string;
+    userId: string;
     name: string;
     role: string;
     company: string;
-    avatarUrl?: string; // Placeholder or Initials
-    tags: ContactTag[];
-    location: string;
-    linkedInUrl?: string;
     email?: string;
-    phone?: string;
+    linkedin?: string;
+    tags: string[];
+    influenceLevel: number;
+    lastInteraction?: string; // ISO String
     interactions: Interaction[];
-    lastContactDate: Date;
+    location?: string;
+    avatarUrl?: string;
+    createdAt?: string; // ISO String
 }

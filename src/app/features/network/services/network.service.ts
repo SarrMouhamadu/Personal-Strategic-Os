@@ -1,85 +1,55 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of, catchError } from 'rxjs';
 import { Contact, Interaction } from '../../../core/models/contact.model';
 import { Opportunity } from '../../../core/models/opportunity.model';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class NetworkService {
-
-    private mockContacts: Contact[] = [
-        {
-            id: 'c1',
-            name: 'Alice Berthelot',
-            role: 'Angel Investor',
-            company: 'Future VC',
-            tags: ['INVESTOR', 'MENTOR'],
-            location: 'Paris, France',
-            email: 'alice@future.vc',
-            linkedInUrl: '#',
-            lastContactDate: new Date('2025-12-15'),
-            interactions: [
-                { id: 'i1', date: new Date('2025-12-15'), type: 'LUNCH', notes: 'Rencontre introductive. Intéressée par la vision "Personal OS".' },
-                { id: 'i2', date: new Date('2025-11-20'), type: 'EMAIL', notes: 'Email de prise de contact envoyé.' }
-            ]
-        },
-        {
-            id: 'c2',
-            name: 'Marc Dubois',
-            role: 'CTO',
-            company: 'TechCorp',
-            tags: ['TALENT', 'PARTNER'],
-            location: 'Lyon, France',
-            email: 'marc@techcorp.io',
-            lastContactDate: new Date('2025-10-05'),
-            interactions: [
-                { id: 'i3', date: new Date('2025-10-05'), type: 'CALL', notes: 'Discussion technique sur l\'architecture.' }
-            ]
-        },
-        {
-            id: 'c3',
-            name: 'Sarah Line',
-            role: 'Founder',
-            company: 'DesignStudio',
-            tags: ['CLIENT', 'PARTNER'],
-            location: 'Remote',
-            lastContactDate: new Date('2025-12-28'),
-            interactions: []
-        }
-    ];
-
-    private mockOpportunities: Opportunity[] = [
-        {
-            id: 'o1',
-            title: 'Seed Round Funding',
-            value: 500000,
-            status: 'CONTACTED',
-            contactId: 'c1',
-            projectId: 'p1',
-            likelihood: 20
-        },
-        {
-            id: 'o2',
-            title: 'Technical Partnership',
-            value: 0,
-            status: 'NEGOTIATION',
-            contactId: 'c2',
-            projectId: 'p2',
-            likelihood: 60
-        }
-    ];
+    private http = inject(HttpClient);
+    private auth = inject(AuthService);
+    private readonly apiUrl = 'http://localhost:3000/api/contacts';
 
     getContacts(): Observable<Contact[]> {
-        return of(this.mockContacts);
+        return this.http.get<Contact[]>(this.apiUrl, {
+            headers: { 'Authorization': `Bearer ${this.auth.token()}` }
+        }).pipe(
+            catchError(err => {
+                console.error('Error fetching contacts', err);
+                return of([]);
+            })
+        );
     }
 
     getContactById(id: string): Observable<Contact | undefined> {
-        const contact = this.mockContacts.find(c => c.id === id);
-        return of(contact);
+        return this.http.get<Contact>(`${this.apiUrl}/${id}`, {
+            headers: { 'Authorization': `Bearer ${this.auth.token()}` }
+        }).pipe(
+            catchError(err => {
+                console.error('Error fetching contact', err);
+                return of(undefined);
+            })
+        );
     }
 
-    getOpportunities(): Observable<Opportunity[]> {
-        return of(this.mockOpportunities);
+    createContact(contact: Partial<Contact>): Observable<Contact> {
+        return this.http.post<Contact>(this.apiUrl, contact, {
+            headers: { 'Authorization': `Bearer ${this.auth.token()}` }
+        });
+    }
+
+    deleteContact(id: string): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/${id}`, {
+            headers: { 'Authorization': `Bearer ${this.auth.token()}` }
+        });
+    }
+
+    addInteraction(contactId: string, interaction: Partial<Interaction>): Observable<Interaction> {
+        return this.http.post<Interaction>(`${this.apiUrl}/${contactId}/interactions`, interaction, {
+            headers: { 'Authorization': `Bearer ${this.auth.token()}` }
+        });
     }
 }

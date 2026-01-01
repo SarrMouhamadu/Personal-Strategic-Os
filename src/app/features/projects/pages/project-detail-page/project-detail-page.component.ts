@@ -1,19 +1,21 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProjectsService } from '../../services/projects.service';
 import { AiService } from '../../../../core/services/ai.service';
 import { KnowledgeService } from '../../../../features/knowledge/services/knowledge.service';
 import { Project } from '../../../../core/models/project.model';
+import { Scenario } from '../../../../core/models/scenario.model';
 import { Resource } from '../../../../core/models/resource.model';
-import { Observable, switchMap, map } from 'rxjs';
+import { Observable, switchMap, map, shareReplay } from 'rxjs';
+import { ScenariosService } from '../../services/scenarios.service';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'app-project-detail-page',
-  standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
-  template: `
+   selector: 'app-project-detail-page',
+   standalone: true,
+   imports: [CommonModule, RouterLink, FormsModule],
+   template: `
     <div class="min-h-screen bg-slate-50 text-slate-800" *ngIf="project$ | async as project">
       
       <!-- Hero -->
@@ -29,8 +31,10 @@ import { FormsModule } from '@angular/forms';
           <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
             <div>
               <div class="flex items-center space-x-4 mb-2">
-                <h1 class="text-4xl font-bold text-slate-900">{{ project.name }}</h1>
-                <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border"
+                <h1 *ngIf="!isEditing" class="text-4xl font-bold text-slate-900">{{ project.name }}</h1>
+                <input *ngIf="isEditing" [(ngModel)]="editData.name" class="text-4xl font-bold text-slate-900 bg-slate-50 border-b border-indigo-300 focus:outline-none focus:bg-white transition-all">
+                
+                <span *ngIf="!isEditing" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border"
                   [ngClass]="{
                     'bg-purple-50 text-purple-700 border-purple-200': project.status === 'DEPLOYED',
                     'bg-emerald-50 text-emerald-700 border-emerald-200': project.status === 'GROWTH',
@@ -40,6 +44,13 @@ import { FormsModule } from '@angular/forms';
                   }">
                   {{ project.status }}
                 </span>
+
+                <select *ngIf="isEditing" [(ngModel)]="editData.status" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold border border-indigo-200 focus:outline-none">
+                   <option value="IDEATION">IDEATION</option>
+                   <option value="BUILD">BUILD</option>
+                   <option value="DEPLOYED">DEPLOYED</option>
+                   <option value="GROWTH">GROWTH</option>
+                </select>
               </div>
               <p class="text-xl text-slate-600 mb-2">{{ project.tagline }}</p>
 
@@ -58,7 +69,7 @@ import { FormsModule } from '@angular/forms';
             </div>
             
             <div class="mt-6 md:mt-0 flex space-x-3">
-               <button (click)="generateSummary(project)" 
+               <button *ngIf="!isEditing" (click)="generateSummary(project)" 
                        class="bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 px-4 py-2 rounded-lg font-medium shadow-sm transition-colors flex items-center group"
                        [disabled]="isGeneratingSummary">
                   <span *ngIf="!isGeneratingSummary" class="mr-2 group-hover:scale-110 transition-transform">
@@ -67,8 +78,26 @@ import { FormsModule } from '@angular/forms';
                   <svg *ngIf="isGeneratingSummary" class="animate-spin -ml-1 mr-3 h-4 w-4 text-indigo-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                   {{ isGeneratingSummary ? 'Summarizing...' : 'AI Summary' }}
                </button>
-               <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors hover:shadow-md">
-                 Open App
+               
+               <button *ngIf="!isEditing" (click)="startEdit(project)" 
+                       class="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg font-medium transition-colors">
+                  Edit
+               </button>
+
+               <button *ngIf="isEditing" (click)="saveEdit()" 
+                       class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95"
+                       [disabled]="isSaving">
+                  {{ isSaving ? 'Saving...' : 'Save Changes' }}
+               </button>
+
+               <button *ngIf="isEditing" (click)="cancelEdit()" 
+                       class="bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-lg font-medium hover:bg-slate-50 transition-colors">
+                  Cancel
+               </button>
+
+               <button *ngIf="!isEditing" (click)="archiveProject(project.id)" 
+                       class="text-rose-600 hover:text-rose-700 font-medium px-4 py-2">
+                  Archive
                </button>
             </div>
           </div>
@@ -120,7 +149,8 @@ import { FormsModule } from '@angular/forms';
           
           <section class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
             <h2 class="text-xl font-bold text-slate-900 mb-4">Vision & Description</h2>
-            <p class="text-slate-600 leading-relaxed text-lg">{{ project.description }}</p>
+            <p *ngIf="!isEditing" class="text-slate-600 leading-relaxed text-lg">{{ project.description }}</p>
+            <textarea *ngIf="isEditing" [(ngModel)]="editData.description" rows="5" class="w-full text-slate-600 leading-relaxed text-lg bg-slate-50 border border-slate-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
           </section>
 
           <section>
@@ -135,11 +165,18 @@ import { FormsModule } from '@angular/forms';
                   </div>
 
                   <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline">
-                    <h3 class="text-lg font-semibold transition-colors group-hover:text-indigo-900" 
-                        [ngClass]="milestone.completed ? 'text-slate-800 line-through decoration-slate-300' : 'text-slate-900'">
-                      {{ milestone.title }}
-                    </h3>
-                    <span class="text-sm font-mono text-slate-500">{{ milestone.date | date:'mediumDate' }}</span>
+                    <div *ngIf="!isEditing" class="flex flex-col">
+                       <h3 class="text-lg font-semibold transition-colors group-hover:text-indigo-900" 
+                           [ngClass]="milestone.completed ? 'text-slate-800 line-through decoration-slate-300' : 'text-slate-900'">
+                         {{ milestone.title }}
+                       </h3>
+                       <span class="text-sm font-mono text-slate-500">{{ milestone.date | date:'mediumDate' }}</span>
+                    </div>
+                    
+                    <div *ngIf="isEditing" class="flex-grow flex gap-4 pr-4">
+                       <input [(ngModel)]="milestone.title" class="flex-grow bg-slate-50 border border-slate-200 rounded px-2 py-1 text-sm">
+                       <input type="checkbox" [(ngModel)]="milestone.completed" class="mt-2 h-4 w-4 text-indigo-600 rounded">
+                    </div>
                   </div>
                 </div>
 
@@ -161,21 +198,36 @@ import { FormsModule } from '@angular/forms';
              </div>
            </section>
 
-           <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow" *ngIf="project.documents?.length">
-             <h2 class="text-lg font-bold text-slate-900 mb-4">Key Documents</h2>
+           <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+             <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-slate-900">Key Documents</h2>
+                <button *ngIf="isEditing" (click)="addDocument()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-widest">+ Add</button>
+             </div>
+
              <div class="space-y-3">
-                <a *ngFor="let doc of project.documents" [href]="doc.url" target="_blank" 
-                   class="flex items-center p-3 rounded-lg hover:bg-slate-50 border border-slate-100 group transition-all">
+                <div *ngFor="let doc of (isEditing ? editData.documents : (project.documents || [])); let i = index" 
+                    class="relative flex items-center p-3 rounded-lg hover:bg-slate-50 border border-slate-100 group transition-all"
+                    [ngClass]="{'bg-slate-50 border-indigo-100': isEditing}">
                    
                    <div class="h-10 w-10 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 mr-3 group-hover:bg-indigo-100 group-hover:scale-110 transition-all">
-                      <span class="font-bold text-xs">{{ doc.type.substring(0,3) }}</span>
+                      <span class="font-bold text-xs">{{ doc.type?.substring(0,3) || '?' }}</span>
                    </div>
                    
-                   <div>
-                      <div class="font-medium text-slate-900 group-hover:text-indigo-600 transition-colors">{{ doc.name }}</div>
-                      <div class="text-xs text-slate-400 font-mono">{{ doc.type }}</div>
+                   <div class="flex-grow">
+                      <div *ngIf="!isEditing">
+                         <div class="font-medium text-slate-900 group-hover:text-indigo-600 transition-colors">{{ doc.name }}</div>
+                         <div class="text-xs text-slate-400 font-mono">{{ doc.type }}</div>
+                      </div>
+                      <div *ngIf="isEditing" class="flex flex-col gap-2 pr-6">
+                         <input [(ngModel)]="doc.name" placeholder="Title" class="text-xs font-medium bg-white border border-slate-200 rounded px-2 py-1">
+                         <input [(ngModel)]="doc.url" placeholder="URL" class="text-[10px] bg-white border border-slate-200 rounded px-2 py-1">
+                      </div>
                    </div>
-                </a>
+
+                   <button *ngIf="isEditing" (click)="removeDocument(i)" class="absolute right-2 top-2 text-rose-400 hover:text-rose-600">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                   </button>
+                </div>
              </div>
            </section>
 
@@ -337,28 +389,122 @@ import { FormsModule } from '@angular/forms';
 
            <!-- Right: KPIs -->
            <div class="lg:col-span-1">
-                <section class="mb-12 sticky top-6" *ngIf="project.kpis?.length">
-                    <h2 class="text-xl font-bold text-slate-900 mb-6">KPIs</h2>
+                <section class="mb-12 sticky top-6">
+                    <div class="flex justify-between items-center mb-6">
+                       <h2 class="text-xl font-bold text-slate-900">KPIs</h2>
+                       <button *ngIf="isEditing" (click)="addKpi()" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-widest">+ Add KPI</button>
+                    </div>
+                    
                     <div class="space-y-4">
-                       <div *ngFor="let kpi of project.kpis" class="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-                          <div class="text-sm font-medium text-slate-500 mb-1">{{ kpi.label }}</div>
-                          <div class="flex items-end justify-between">
-                             <div class="text-3xl font-bold text-slate-900">{{ kpi.value }}</div>
-                             <div class="flex items-center px-2 py-1 rounded text-xs font-bold"
-                                  [ngClass]="{
-                                     'bg-green-50 text-green-700': kpi.trend === 'UP',
-                                     'bg-red-50 text-red-700': kpi.trend === 'DOWN',
-                                     'bg-slate-50 text-slate-500': kpi.trend === 'STABLE'
-                                  }">
-                                <span *ngIf="kpi.trend === 'UP'">↑</span>
-                                <span *ngIf="kpi.trend === 'DOWN'">↓</span>
-                                <span *ngIf="kpi.trend === 'STABLE'">→</span>
-                                <span class="ml-1">{{ kpi.trend }}</span>
+                       <div *ngFor="let kpi of (isEditing ? editData.kpis : (project.kpis || [])); let i = index" class="bg-white rounded-xl p-6 shadow-sm border border-slate-100 relative group">
+                          
+                          <div *ngIf="!isEditing">
+                             <div class="text-sm font-medium text-slate-500 mb-1">{{ kpi.label }}</div>
+                             <div class="flex items-end justify-between">
+                                <div class="text-3xl font-bold text-slate-900">{{ kpi.value }}</div>
+                                <div class="flex items-center px-2 py-1 rounded text-xs font-bold"
+                                     [ngClass]="{
+                                        'bg-green-50 text-green-700': kpi.trend === 'UP',
+                                        'bg-red-50 text-red-700': kpi.trend === 'DOWN',
+                                        'bg-slate-50 text-slate-500': kpi.trend === 'STABLE'
+                                     }">
+                                   <span *ngIf="kpi.trend === 'UP'">↑</span>
+                                   <span *ngIf="kpi.trend === 'DOWN'">↓</span>
+                                   <span *ngIf="kpi.trend === 'STABLE'">→</span>
+                                   <span class="ml-1">{{ kpi.trend }}</span>
+                                </div>
                              </div>
+                          </div>
+
+                          <div *ngIf="isEditing" class="space-y-3">
+                             <input [(ngModel)]="kpi.label" placeholder="Label" class="w-full text-xs font-bold text-slate-500 bg-slate-50 border border-slate-100 rounded px-2 py-1">
+                             <div class="flex gap-2">
+                                <input [(ngModel)]="kpi.value" placeholder="Value" class="flex-grow text-xl font-bold text-slate-900 bg-slate-50 border border-slate-100 rounded px-2 py-1">
+                                <select [(ngModel)]="kpi.trend" class="text-xs font-bold bg-slate-50 border border-slate-100 rounded px-1">
+                                   <option value="UP">UP</option>
+                                   <option value="DOWN">DOWN</option>
+                                   <option value="STABLE">STABLE</option>
+                                </select>
+                             </div>
+                             <button (click)="removeKpi(i)" class="absolute top-2 right-2 text-rose-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                             </button>
                           </div>
                        </div>
                     </div>
                  </section>
+
+                <!-- BUS-11: Strategic Scenarios Comparison -->
+                <section class="mt-12">
+                   <div class="flex justify-between items-center mb-6">
+                      <h2 class="text-2xl font-bold text-slate-900">Strategic Scenarios</h2>
+                      <button (click)="showScenarioModal = true" class="bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-widest transition-all">
+                         + New Scenario
+                      </button>
+                   </div>
+
+                   <div *ngIf="scenarios$ | async as scenarios" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div *ngFor="let scenario of scenarios" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+                         <div class="absolute top-0 right-0 p-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tighter"
+                                  [ngClass]="{
+                                     'bg-emerald-50 text-emerald-600 border border-emerald-100': scenario.riskLevel === 'LOW',
+                                     'bg-amber-50 text-amber-600 border border-amber-100': scenario.riskLevel === 'MEDIUM',
+                                     'bg-orange-50 text-orange-600 border border-orange-100': scenario.riskLevel === 'HIGH',
+                                     'bg-rose-50 text-rose-600 border border-rose-100': scenario.riskLevel === 'CRITICAL'
+                                  }">
+                               {{ scenario.riskLevel }} RISK
+                            </span>
+                         </div>
+                         
+                         <h3 class="text-lg font-bold text-slate-900 mb-2">{{ scenario.name }}</h3>
+                         <p class="text-sm text-slate-500 mb-4 line-clamp-2">{{ scenario.description }}</p>
+
+                         <div class="space-y-4">
+                            <div>
+                               <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Key Assumptions</h4>
+                               <ul class="text-xs text-slate-600 space-y-1">
+                                  <li *ngFor="let a of scenario.assumptions" class="flex items-center">
+                                     <span class="w-1 h-1 bg-indigo-400 rounded-full mr-2"></span> {{ a }}
+                                  </li>
+                               </ul>
+                            </div>
+                         </div>
+
+                         <div class="mt-6 pt-4 border-t border-slate-50 flex justify-between items-center">
+                            <span class="text-[10px] font-bold text-slate-400">{{ scenario.createdAt | date:'shortDate' }}</span>
+                            <button (click)="deleteScenario(scenario.id)" class="text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all">
+                               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                         </div>
+                      </div>
+                      
+                      <div *ngIf="scenarios.length === 0" class="md:col-span-2 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-12 text-center text-slate-400">
+                         Aucun scénario stratégique défini. Explorez vos options.
+                      </div>
+                   </div>
+                </section>
+
+                <!-- Scenario Modal (Simplified for speed) -->
+                <div *ngIf="showScenarioModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-slate-200">
+                      <h3 class="text-xl font-bold text-slate-900 mb-4">Nouveau Scénario</h3>
+                      <div class="space-y-4">
+                         <input [(ngModel)]="newScenario.name" placeholder="Nom du scénario" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2">
+                         <textarea [(ngModel)]="newScenario.description" placeholder="Description..." class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2" rows="3"></textarea>
+                         <select [(ngModel)]="newScenario.riskLevel" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2">
+                            <option value="LOW">LOW RISK</option>
+                            <option value="MEDIUM">MEDIUM RISK</option>
+                            <option value="HIGH">HIGH RISK</option>
+                            <option value="CRITICAL">CRITICAL RISK</option>
+                         </select>
+                      </div>
+                      <div class="flex gap-3 mt-6">
+                         <button (click)="showScenarioModal = false" class="flex-1 py-2 rounded-lg border border-slate-200">Annuler</button>
+                         <button (click)="submitScenario(project.id)" class="flex-1 py-2 rounded-lg bg-indigo-600 text-white font-bold">Créer</button>
+                      </div>
+                   </div>
+                </div>
            </div>
          </div>
 
@@ -433,53 +579,137 @@ import { FormsModule } from '@angular/forms';
   `
 })
 export class ProjectDetailPageComponent implements OnInit {
-  project$!: Observable<Project | undefined>;
-  linkedResources$!: Observable<Resource[]>;
-  activeTab: 'OVERVIEW' | 'STRATEGY' | 'COMPLIANCE' = 'OVERVIEW';
+   project$!: Observable<Project | undefined>;
+   scenarios$!: Observable<Scenario[]>;
+   linkedResources$!: Observable<Resource[]>;
+   activeTab: 'OVERVIEW' | 'STRATEGY' | 'COMPLIANCE' = 'OVERVIEW';
 
-  // AI State
-  isGeneratingSummary = false;
-  aiSummary: string | null = null;
+   // Scenario State
+   showScenarioModal = false;
+   newScenario: Partial<Scenario> = { name: '', description: '', riskLevel: 'MEDIUM', assumptions: ['Assumption 1'], outcomes: ['Outcome 1'], status: 'DRAFT' };
 
-  isGeneratingPitch = false;
-  selectedAudience: 'INVESTOR' | 'CLIENT' | 'PARTNER' = 'INVESTOR';
-  generatedPitch: string | null = null;
+   // AI State
+   isGeneratingSummary = false;
+   aiSummary: string | null = null;
 
-  constructor(
-    private route: ActivatedRoute,
-    private projectsService: ProjectsService,
-    private aiService: AiService,
-    private knowledgeService: KnowledgeService
-  ) { }
+   isGeneratingPitch = false;
+   selectedAudience: 'INVESTOR' | 'CLIENT' | 'PARTNER' = 'INVESTOR';
+   generatedPitch: string | null = null;
 
-  ngOnInit(): void {
-    this.project$ = this.route.paramMap.pipe(
-      switchMap(params => {
-        const id = params.get('id');
-        if (id) {
-          this.linkedResources$ = this.knowledgeService.getResourcesByProjectId(id);
-          return this.projectsService.getProjectById(id);
-        }
-        return new Observable<undefined>(sub => sub.next(undefined));
-      })
-    );
-  }
+   // Edit State
+   isEditing = false;
+   isSaving = false;
+   editData: any = {};
 
-  generateSummary(project: Project) {
-    this.isGeneratingSummary = true;
-    this.aiSummary = null;
-    this.aiService.generateProjectSummary(project).subscribe(summary => {
-      this.aiSummary = summary.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); // Simple markdown bold to HTML
-      this.isGeneratingSummary = false;
-    });
-  }
+   private router = inject(Router);
 
-  generatePitch(project: Project) {
-    this.isGeneratingPitch = true;
-    this.generatedPitch = null;
-    this.aiService.generatePitch(project, this.selectedAudience).subscribe(pitch => {
-      this.generatedPitch = pitch.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-      this.isGeneratingPitch = false;
-    });
-  }
+   constructor(
+      private route: ActivatedRoute,
+      private projectsService: ProjectsService,
+      private scenariosService: ScenariosService,
+      private aiService: AiService,
+      private knowledgeService: KnowledgeService
+   ) { }
+
+   ngOnInit(): void {
+      const projectAndScenarios$ = this.route.paramMap.pipe(
+         switchMap(params => {
+            const id = params.get('id');
+            if (id) {
+               this.linkedResources$ = this.knowledgeService.getResourcesByProjectId(id);
+               this.scenarios$ = this.scenariosService.getScenariosByProject(id).pipe(shareReplay(1));
+               return this.projectsService.getProjectById(id);
+            }
+            return new Observable<undefined>(sub => sub.next(undefined));
+         }),
+         shareReplay(1)
+      );
+      this.project$ = projectAndScenarios$;
+   }
+
+   generateSummary(project: Project) {
+      this.isGeneratingSummary = true;
+      this.aiSummary = null;
+      this.aiService.generateProjectSummary(project).subscribe(summary => {
+         this.aiSummary = summary.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); // Simple markdown bold to HTML
+         this.isGeneratingSummary = false;
+      });
+   }
+
+   generatePitch(project: Project) {
+      this.isGeneratingPitch = true;
+      this.generatedPitch = null;
+      this.aiService.generatePitch(project, this.selectedAudience).subscribe(pitch => {
+         this.generatedPitch = pitch.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+         this.isGeneratingPitch = false;
+      });
+   }
+
+   startEdit(project: Project) {
+      this.isEditing = true;
+      this.editData = { ...project };
+   }
+
+   cancelEdit() {
+      this.isEditing = false;
+   }
+
+   saveEdit() {
+      this.isSaving = true;
+      this.projectsService.updateProject(this.editData.id, this.editData).subscribe({
+         next: () => {
+            this.isSaving = false;
+            this.isEditing = false;
+            this.ngOnInit(); // Reload
+         },
+         error: () => this.isSaving = false
+      });
+   }
+
+   archiveProject(id: string) {
+      if (confirm('Êtes-vous sûr de vouloir archiver ce projet ?')) {
+         this.projectsService.archiveProject(id).subscribe(() => {
+            this.router.navigate(['/projects']);
+         });
+      }
+   }
+
+   addDocument() {
+      if (!this.editData.documents) this.editData.documents = [];
+      this.editData.documents.push({ id: Date.now().toString(), name: 'New Doc', type: 'LINK', url: '' });
+   }
+
+   removeDocument(index: number) {
+      this.editData.documents.splice(index, 1);
+   }
+
+   addKpi() {
+      if (!this.editData.kpis) this.editData.kpis = [];
+      this.editData.kpis.push({ id: Date.now().toString(), label: 'New KPI', value: '0', trend: 'STABLE', status: 'GOOD' });
+   }
+
+   removeKpi(index: number) {
+      this.editData.kpis.splice(index, 1);
+   }
+
+   trackByIndex(index: number, item: any): any {
+      return index;
+   }
+
+   submitScenario(projectId: string) {
+      const scenarioToCreate = { ...this.newScenario, projectId };
+      this.scenariosService.createScenario(scenarioToCreate).subscribe(() => {
+         this.showScenarioModal = false;
+         this.newScenario = { name: '', description: '', riskLevel: 'MEDIUM', assumptions: ['Assumption 1'], outcomes: ['Outcome 1'], status: 'DRAFT' };
+         this.ngOnInit(); // Refresh
+      });
+   }
+
+   deleteScenario(id: string) {
+      if (confirm('Supprimer ce scénario ?')) {
+         this.scenariosService.deleteScenario(id).subscribe(() => {
+            this.ngOnInit(); // Refresh
+         });
+      }
+   }
 }

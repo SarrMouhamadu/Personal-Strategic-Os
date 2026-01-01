@@ -1,36 +1,36 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
-import { Goal } from '../../../core/models/goal.model';
+import { Scenario } from '../../../core/models/scenario.model';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Injectable({
     providedIn: 'root'
 })
-export class GoalsService {
+export class ScenariosService {
     private http = inject(HttpClient);
     private auth = inject(AuthService);
-    private readonly apiUrl = 'http://localhost:3000/api/goals';
+    private readonly apiUrl = 'http://localhost:3000/api/scenarios';
 
-    getGoals(year: number): Observable<Goal[]> {
-        return this.http.get<Goal[]>(`${this.apiUrl}?year=${year}`, {
+    getScenariosByProject(projectId: string): Observable<Scenario[]> {
+        return this.http.get<Scenario[]>(`${this.apiUrl}/project/${projectId}`, {
             headers: { 'Authorization': `Bearer ${this.auth.token()}` }
         }).pipe(
             catchError(err => {
-                console.error('Error fetching goals', err);
+                console.error('Error fetching scenarios', err);
                 return of([]);
             })
         );
     }
 
-    createGoal(goal: Partial<Goal>): Observable<Goal> {
-        return this.http.post<Goal>(this.apiUrl, goal, {
+    createScenario(scenario: Partial<Scenario>): Observable<Scenario> {
+        return this.http.post<Scenario>(this.apiUrl, scenario, {
             headers: { 'Authorization': `Bearer ${this.auth.token()}` }
         });
     }
 
-    updateGoal(id: string, goal: Partial<Goal>): Observable<Goal> {
-        return this.http.put<Goal>(`${this.apiUrl}/${id}`, goal, {
+    deleteScenario(id: string): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/${id}`, {
             headers: { 'Authorization': `Bearer ${this.auth.token()}` }
         });
     }

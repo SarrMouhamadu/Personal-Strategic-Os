@@ -1,14 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IdentityService } from '../../services/identity.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { Profile } from '../../../../core/models/profile.model';
 import { Observable } from 'rxjs';
 
 @Component({
-    selector: 'app-profile-page',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
+  selector: 'app-profile-page',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
     <div class="min-h-screen bg-slate-50 text-slate-800" *ngIf="profile$ | async as profile">
       
       <!-- Hero Section -->
@@ -26,7 +27,6 @@ import { Observable } from 'rxjs';
             </p>
           </div>
           <div class="mt-8 lg:mt-0 lg:ml-8 flex-shrink-0">
-             <!-- Placeholder for Avatar if needed -->
              <div class="h-32 w-32 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-3xl font-bold border-4 border-white shadow-lg">
                 {{ profile.fullName.charAt(0) }}
              </div>
@@ -54,6 +54,31 @@ import { Observable } from 'rxjs';
                   <div class="bg-indigo-600 h-2 rounded-full transition-all duration-1000" [style.width.%]="skill.level"></div>
                 </div>
               </div>
+            </div>
+          </section>
+
+          <!-- BUS-02: Role Management UI -->
+          <section class="bg-indigo-900 rounded-2xl shadow-lg p-6 text-white overflow-hidden relative">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/5 rounded-full blur-2xl"></div>
+            <h2 class="text-lg font-bold mb-4 flex items-center">
+               <svg class="w-5 h-5 mr-2 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+               Strategic Role
+            </h2>
+            <p class="text-indigo-200 text-sm mb-6">Définissez votre niveau de visibilité et d'accès aux données.</p>
+            
+            <div class="space-y-3">
+               <button *ngFor="let r of ['PRIVATE', 'PUBLIC', 'INVESTOR']"
+                       (click)="updateRole(r)"
+                       class="w-full text-left px-4 py-3 rounded-xl border transition-all flex items-center justify-between group"
+                       [ngClass]="(authService.currentUser()?.role === r) ? 'bg-white text-indigo-900 border-white font-bold' : 'bg-white/10 border-white/10 hover:bg-white/20 text-indigo-100'">
+                  <span>{{ r }}</span>
+                  <svg *ngIf="authService.currentUser()?.role === r" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+               </button>
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-white/10 flex items-center justify-between">
+               <span class="text-xs text-indigo-300">Session ID: {{ authService.currentUser()?.id }}</span>
+               <button (click)="authService.logout()" class="text-xs font-bold text-rose-300 hover:text-rose-200 underline">Déconnexion</button>
             </div>
           </section>
 
@@ -108,11 +133,16 @@ import { Observable } from 'rxjs';
   `
 })
 export class ProfilePageComponent implements OnInit {
-    profile$!: Observable<Profile>;
+  profile$!: Observable<Profile>;
+  authService = inject(AuthService);
 
-    constructor(private identityService: IdentityService) { }
+  constructor(private identityService: IdentityService) { }
 
-    ngOnInit(): void {
-        this.profile$ = this.identityService.getProfile();
-    }
+  ngOnInit(): void {
+    this.profile$ = this.identityService.getProfile();
+  }
+
+  updateRole(role: string) {
+    this.authService.updateRole(role).subscribe();
+  }
 }

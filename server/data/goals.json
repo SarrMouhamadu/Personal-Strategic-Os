@@ -1,0 +1,47 @@
+[
+    {
+        "userId": "1",
+        "id": "g1",
+        "type": "ANNUAL",
+        "year": 2026,
+        "title": "Lancement Commercial Global",
+        "description": "Atteindre une présence sur 3 continents avec le produit phare.",
+        "status": "IN_PROGRESS",
+        "progress": 35,
+        "keyResults": [
+            {
+                "id": "kr1",
+                "description": "Chiffre d'affaires",
+                "targetValue": 1000000,
+                "currentValue": 350000,
+                "unit": "EUR"
+            },
+            {
+                "id": "kr2",
+                "description": "Utilisateurs actifs",
+                "targetValue": 50000,
+                "currentValue": 12000,
+                "unit": "Users"
+            }
+        ]
+    },
+    {
+        "userId": "1",
+        "id": "g2",
+        "type": "ANNUAL",
+        "year": 2026,
+        "title": "Excellence Opérationnelle",
+        "description": "Automatiser 80% des processus internes.",
+        "status": "NOT_STARTED",
+        "progress": 0,
+        "keyResults": [
+            {
+                "id": "kr3",
+                "description": "Processus automatisés",
+                "targetValue": 20,
+                "currentValue": 2,
+                "unit": "Process"
+            }
+        ]
+    }
+]
