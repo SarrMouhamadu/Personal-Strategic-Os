@@ -77,7 +77,7 @@ exports.updateProject = (req, res, next) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
-        const projects = getProjectsData();
+        const projects = dbService.read('projects.json');
 
         const index = projects.findIndex(p => p.id === id && p.userId === userId);
         if (index === -1) {
@@ -105,7 +105,7 @@ exports.archiveProject = (req, res, next) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
-        const projects = getProjectsData();
+        const projects = dbService.read('projects.json');
 
         const index = projects.findIndex(p => p.id === id && p.userId === userId);
         if (index === -1) {
