@@ -2,8 +2,21 @@ const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Joi = require('joi');
 
 const usersFilePath = path.join(__dirname, '../data/users.json');
+
+// Validation Schemas
+const registerSchema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(8).required(),
+    name: Joi.string().min(2).required()
+});
+
+const loginSchema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required()
+});
 
 // Helper to read users
 const getUsers = () => {
@@ -16,8 +29,15 @@ const saveUsers = (users) => {
     fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
 };
 
-exports.register = async (req, res) => {
+exports.register = async (req, res, next) => {
     try {
+        const { error } = registerSchema.validate(req.body);
+        if (error) {
+            const err = new Error(error.details[0].message);
+            err.statusCode = 400;
+            throw err;
+        }
+
         const { email, password, name } = req.body;
         const users = getUsers();
 
@@ -44,12 +64,19 @@ exports.register = async (req, res) => {
 
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Error registering user', error: error.message });
+        next(error);
     }
 };
 
-exports.login = async (req, res) => {
+exports.login = async (req, res, next) => {
     try {
+        const { error } = loginSchema.validate(req.body);
+        if (error) {
+            const err = new Error(error.details[0].message);
+            err.statusCode = 400;
+            throw err;
+        }
+
         const { email, password } = req.body;
         const users = getUsers();
 
@@ -81,6 +108,6 @@ exports.login = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ message: 'Error logging in', error: error.message });
+        next(error);
     }
 };
