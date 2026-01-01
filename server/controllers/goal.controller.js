@@ -35,7 +35,7 @@ exports.createGoal = (req, res, next) => {
 
         const userId = req.user.id;
         const goalData = req.body;
-        const goals = getGoalsData();
+        const goals = dbService.read('goals.json');
 
         const newGoal = {
             ...goalData,
@@ -44,7 +44,7 @@ exports.createGoal = (req, res, next) => {
         };
 
         goals.push(newGoal);
-        saveGoalsData(goals);
+        dbService.write('goals.json', goals);
         res.status(201).json(newGoal);
     } catch (error) {
         next(error);

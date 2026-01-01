@@ -33,7 +33,7 @@ exports.createDecision = (req, res, next) => {
 
         const userId = req.user.id;
         const decisionData = req.body;
-        const decisions = getDecisionsData();
+        const decisions = dbService.read('decisions.json');
 
         const newDecision = {
             ...decisionData,
@@ -43,7 +43,7 @@ exports.createDecision = (req, res, next) => {
         };
 
         decisions.push(newDecision);
-        saveDecisionsData(decisions);
+        dbService.write('decisions.json', decisions);
         res.status(201).json(newDecision);
     } catch (error) {
         next(error);
