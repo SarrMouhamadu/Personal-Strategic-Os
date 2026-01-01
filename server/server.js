@@ -13,12 +13,32 @@ const projectRoutes = require('./routes/project.routes');
 const scenarioRoutes = require('./routes/scenario.routes');
 const contactRoutes = require('./routes/contact.routes');
 const auditLogRoutes = require('./routes/audit.routes');
+const analyticsRoutes = require('./routes/analytics.routes');
+
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const compression = require('compression');
+const errorHandler = require('./middleware/error.middleware');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
+// Security & Performance Middleware
+app.use(helmet());
+app.use(compression());
+app.use(cors({
+    origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use('/api/', limiter);
+
 app.use(bodyParser.json());
 app.use(morgan('dev'));
 
@@ -32,11 +52,15 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/scenarios', scenarioRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/audit', auditLogRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Base route
 app.get('/', (req, res) => {
     res.json({ message: 'Personal Strategic OS API is running' });
 });
+
+// Error Handler (must be after routes)
+app.use(errorHandler);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
