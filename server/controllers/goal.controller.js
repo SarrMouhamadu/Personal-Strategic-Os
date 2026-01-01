@@ -1,5 +1,17 @@
 const fs = require('fs');
 const path = require('path');
+const Joi = require('joi');
+
+const goalSchema = Joi.object({
+    title: Joi.string().min(3).required(),
+    targetValue: Joi.number().required(),
+    currentValue: Joi.number().optional(),
+    unit: Joi.string().required(),
+    deadline: Joi.string().isoDate().required(),
+    category: Joi.string().valid('PERSONAL', 'PROFESSIONAL', 'FINANCIAL', 'NETWORK').required(),
+    status: Joi.string().valid('TODO', 'IN_PROGRESS', 'COMPLETED').default('TODO'),
+    year: Joi.number().integer().min(2020).max(2100).required()
+});
 
 const goalsFilePath = path.join(__dirname, '../data/goals.json');
 
@@ -16,7 +28,7 @@ const saveGoalsData = (goals) => {
     fs.writeFileSync(goalsFilePath, JSON.stringify(goals, null, 2));
 };
 
-exports.getGoals = (req, res) => {
+exports.getGoals = (req, res, next) => {
     try {
         const userId = req.user.id;
         const year = parseInt(req.query.year) || new Date().getFullYear();
@@ -24,12 +36,19 @@ exports.getGoals = (req, res) => {
         const userGoals = goals.filter(g => g.userId === userId && g.year === year);
         res.json(userGoals);
     } catch (error) {
-        res.status(500).json({ message: 'Error retrieving goals', error: error.message });
+        next(error);
     }
 };
 
-exports.createGoal = (req, res) => {
+exports.createGoal = (req, res, next) => {
     try {
+        const { error } = goalSchema.validate(req.body);
+        if (error) {
+            const err = new Error(error.details[0].message);
+            err.statusCode = 400;
+            throw err;
+        }
+
         const userId = req.user.id;
         const goalData = req.body;
         const goals = getGoalsData();
@@ -44,26 +63,34 @@ exports.createGoal = (req, res) => {
         saveGoalsData(goals);
         res.status(201).json(newGoal);
     } catch (error) {
-        res.status(500).json({ message: 'Error creating goal', error: error.message });
+        next(error);
     }
 };
 
-exports.updateGoal = (req, res) => {
+exports.updateGoal = (req, res, next) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
-        const goalData = req.body;
         const goals = getGoalsData();
 
         const index = goals.findIndex(g => g.id === id && g.userId === userId);
         if (index === -1) {
-            return res.status(404).json({ message: 'Goal not found' });
+            const err = new Error('Goal not found');
+            err.statusCode = 404;
+            throw err;
         }
 
-        goals[index] = { ...goals[index], ...goalData };
+        const { error } = goalSchema.validate({ ...goals[index], ...req.body });
+        if (error) {
+            const err = new Error(error.details[0].message);
+            err.statusCode = 400;
+            throw err;
+        }
+
+        goals[index] = { ...goals[index], ...req.body };
         saveGoalsData(goals);
         res.json(goals[index]);
     } catch (error) {
-        res.status(500).json({ message: 'Error updating goal', error: error.message });
+        next(error);
     }
 };
