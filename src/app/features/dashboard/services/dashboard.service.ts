@@ -52,12 +52,7 @@ export class DashboardService {
     }
 
     getRecentActivity(): Observable<Activity[]> {
-        return of([
-            { id: 'a1', type: 'DECISION', title: 'Pivot to B2B for EcoTrack', date: new Date('2025-12-28'), projectId: 'p3', projectName: 'EcoTrack' },
-            { id: 'a2', type: 'MILESTONE', title: 'Identity Module Completed', date: new Date('2025-12-30'), projectId: 'p1', projectName: 'Personal OS' },
-            { id: 'a3', type: 'PROJECT_START', title: 'Dating Platform Kickoff', date: new Date('2025-12-29'), projectId: 'p2', projectName: 'Dating Platform' },
-            { id: 'a4', type: 'GOAL_REACHED', title: 'Read 20 Books', date: new Date('2025-11-15') }
-        ]);
+        return of([]);
     }
 
     getFinancialSnapshot(): Observable<any> {
