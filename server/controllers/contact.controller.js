@@ -1,5 +1,23 @@
 const fs = require('fs');
 const path = require('path');
+const Joi = require('joi');
+
+const contactSchema = Joi.object({
+    name: Joi.string().min(2).required(),
+    role: Joi.string().required(),
+    company: Joi.string().required(),
+    email: Joi.string().email().required(),
+    location: Joi.string().required(),
+    linkedin: Joi.string().uri().allow(''),
+    tags: Joi.array().items(Joi.string()),
+    interactions: Joi.array().items(Joi.object()).optional()
+});
+
+const interactionSchema = Joi.object({
+    type: Joi.string().valid('EMAIL', 'CALL', 'MEETING', 'LUNCH', 'OTHER').required(),
+    date: Joi.string().isoDate().required(),
+    summary: Joi.string().required()
+});
 
 const contactsFilePath = path.join(__dirname, '../data/contacts.json');
 
@@ -16,19 +34,26 @@ const saveContactsData = (contacts) => {
     fs.writeFileSync(contactsFilePath, JSON.stringify(contacts, null, 2));
 };
 
-exports.getAllContacts = (req, res) => {
+exports.getAllContacts = (req, res, next) => {
     try {
         const userId = req.user.id;
         const contacts = getContactsData();
         const userContacts = contacts.filter(c => c.userId === userId);
         res.json(userContacts);
     } catch (error) {
-        res.status(500).json({ message: 'Error retrieving contacts', error: error.message });
+        next(error);
     }
 };
 
-exports.createContact = (req, res) => {
+exports.createContact = (req, res, next) => {
     try {
+        const { error } = contactSchema.validate(req.body);
+        if (error) {
+            const err = new Error(error.details[0].message);
+            err.statusCode = 400;
+            throw err;
+        }
+
         const userId = req.user.id;
         const contactData = req.body;
         const contacts = getContactsData();
@@ -45,31 +70,39 @@ exports.createContact = (req, res) => {
         saveContactsData(contacts);
         res.status(201).json(newContact);
     } catch (error) {
-        res.status(500).json({ message: 'Error creating contact', error: error.message });
+        next(error);
     }
 };
 
-exports.updateContact = (req, res) => {
+exports.updateContact = (req, res, next) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
-        const contactData = req.body;
         const contacts = getContactsData();
 
         const index = contacts.findIndex(c => c.id === id && c.userId === userId);
         if (index === -1) {
-            return res.status(404).json({ message: 'Contact not found' });
+            const err = new Error('Contact not found');
+            err.statusCode = 404;
+            throw err;
         }
 
-        contacts[index] = { ...contacts[index], ...contactData };
+        const { error } = contactSchema.validate({ ...contacts[index], ...req.body });
+        if (error) {
+            const err = new Error(error.details[0].message);
+            err.statusCode = 400;
+            throw err;
+        }
+
+        contacts[index] = { ...contacts[index], ...req.body };
         saveContactsData(contacts);
         res.json(contacts[index]);
     } catch (error) {
-        res.status(500).json({ message: 'Error updating contact', error: error.message });
+        next(error);
     }
 };
 
-exports.deleteContact = (req, res) => {
+exports.deleteContact = (req, res, next) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
@@ -77,19 +110,28 @@ exports.deleteContact = (req, res) => {
         const filtered = contacts.filter(c => !(c.id === id && c.userId === userId));
 
         if (contacts.length === filtered.length) {
-            return res.status(404).json({ message: 'Contact not found' });
+            const err = new Error('Contact not found');
+            err.statusCode = 404;
+            throw err;
         }
 
         saveContactsData(filtered);
         res.json({ message: 'Contact deleted' });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting contact', error: error.message });
+        next(error);
     }
 };
 
 // Interaction History
-exports.addInteraction = (req, res) => {
+exports.addInteraction = (req, res, next) => {
     try {
+        const { error } = interactionSchema.validate(req.body);
+        if (error) {
+            const err = new Error(error.details[0].message);
+            err.statusCode = 400;
+            throw err;
+        }
+
         const userId = req.user.id;
         const { id } = req.params;
         const interactionData = req.body;
@@ -97,7 +139,9 @@ exports.addInteraction = (req, res) => {
 
         const index = contacts.findIndex(c => c.id === id && c.userId === userId);
         if (index === -1) {
-            return res.status(404).json({ message: 'Contact not found' });
+            const err = new Error('Contact not found');
+            err.statusCode = 404;
+            throw err;
         }
 
         const newInteraction = {
@@ -111,6 +155,6 @@ exports.addInteraction = (req, res) => {
         saveContactsData(contacts);
         res.status(201).json(newInteraction);
     } catch (error) {
-        res.status(500).json({ message: 'Error adding interaction', error: error.message });
+        next(error);
     }
 };
