@@ -9,6 +9,10 @@ const path = require('path');
 class DbService {
     constructor() {
         this.basePath = path.join(__dirname, '../data');
+        // Ensure data directory exists
+        if (!fs.existsSync(this.basePath)) {
+            fs.mkdirSync(this.basePath, { recursive: true });
+        }
     }
 
     /**
@@ -20,10 +24,15 @@ class DbService {
         try {
             const filePath = path.join(this.basePath, fileName);
             if (!fs.existsSync(filePath)) {
+                console.log(`[DbService] File ${fileName} not found, creating empty array`);
+                // Auto-create empty file
+                fs.writeFileSync(filePath, JSON.stringify([], null, 2));
                 return [];
             }
             const data = fs.readFileSync(filePath, 'utf8');
-            return JSON.parse(data);
+            const parsed = JSON.parse(data);
+            console.log(`[DbService] Successfully read ${fileName}, items: ${Array.isArray(parsed) ? parsed.length : 'N/A'}`);
+            return parsed;
         } catch (error) {
             console.error(`[DbService] Error reading ${fileName}:`, error.message);
             return [];
@@ -39,6 +48,7 @@ class DbService {
         try {
             const filePath = path.join(this.basePath, fileName);
             fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+            console.log(`[DbService] Successfully wrote to ${fileName}, items: ${Array.isArray(data) ? data.length : 'N/A'}`);
         } catch (error) {
             console.error(`[DbService] Error writing to ${fileName}:`, error.message);
             throw new Error(`Critical data persistence error: ${fileName}`);
