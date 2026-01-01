@@ -136,7 +136,7 @@ exports.addInteraction = (req, res, next) => {
         contacts[index].interactions.push(newInteraction);
         contacts[index].lastInteraction = newInteraction.date;
 
-        saveContactsData(contacts);
+        dbService.write('contacts.json', contacts);
         res.status(201).json(newInteraction);
     } catch (error) {
         next(error);

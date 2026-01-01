@@ -1,4 +1,13 @@
+const Joi = require('joi');
 const dbService = require('../services/db.service');
+
+const scenarioSchema = Joi.object({
+    projectId: Joi.string().required(),
+    name: Joi.string().min(2).required(),
+    description: Joi.string().required(),
+    status: Joi.string().valid('PROPOSED', 'APPROVED', 'REJECTED').default('PROPOSED'),
+    tags: Joi.array().items(Joi.string()).optional()
+});
 
 exports.getScenariosByProject = (req, res, next) => {
     try {
