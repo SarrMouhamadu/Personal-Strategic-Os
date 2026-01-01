@@ -1,8 +1,5 @@
-const fs = require('fs');
-const path = require('path');
 const Joi = require('joi');
-
-const projectsFilePath = path.join(__dirname, '../data/projects.json');
+const dbService = require('../services/db.service');
 
 const projectSchema = Joi.object({
     name: Joi.string().min(3).required(),
@@ -19,23 +16,10 @@ const projectSchema = Joi.object({
     })).optional()
 });
 
-const getProjectsData = () => {
-    try {
-        const data = fs.readFileSync(projectsFilePath, 'utf8');
-        return JSON.parse(data);
-    } catch (e) {
-        return [];
-    }
-};
-
-const saveProjectsData = (projects) => {
-    fs.writeFileSync(projectsFilePath, JSON.stringify(projects, null, 2));
-};
-
 exports.getProjects = (req, res, next) => {
     try {
         const userId = req.user.id;
-        const projects = getProjectsData();
+        const projects = dbService.read('projects.json');
         const userProjects = projects.filter(p => p.userId === userId || p.accessLevel === 'PUBLIC');
         res.json(userProjects);
     } catch (error) {
@@ -47,7 +31,7 @@ exports.getProjectById = (req, res, next) => {
     try {
         const { id } = req.params;
         const userId = req.user.id;
-        const projects = getProjectsData();
+        const projects = dbService.read('projects.json');
         const project = projects.find(p => p.id === id && (p.userId === userId || p.accessLevel === 'PUBLIC'));
 
         if (!project) {
@@ -72,7 +56,7 @@ exports.createProject = (req, res, next) => {
 
         const userId = req.user.id;
         const projectData = req.body;
-        const projects = getProjectsData();
+        const projects = dbService.read('projects.json');
 
         const newProject = {
             ...projectData,
@@ -82,7 +66,7 @@ exports.createProject = (req, res, next) => {
         };
 
         projects.push(newProject);
-        saveProjectsData(projects);
+        dbService.write('projects.json', projects);
         res.status(201).json(newProject);
     } catch (error) {
         next(error);
@@ -110,7 +94,7 @@ exports.updateProject = (req, res, next) => {
         }
 
         projects[index] = { ...projects[index], ...req.body };
-        saveProjectsData(projects);
+        dbService.write('projects.json', projects);
         res.json(projects[index]);
     } catch (error) {
         next(error);
@@ -131,7 +115,7 @@ exports.archiveProject = (req, res, next) => {
         }
 
         projects[index].status = 'ARCHIVED';
-        saveProjectsData(projects);
+        dbService.write('projects.json', projects);
         res.json({ message: 'Project archived', project: projects[index] });
     } catch (error) {
         next(error);

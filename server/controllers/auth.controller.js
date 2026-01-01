@@ -1,10 +1,7 @@
-const fs = require('fs');
-const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
-
-const usersFilePath = path.join(__dirname, '../data/users.json');
+const dbService = require('../services/db.service');
 
 // Validation Schemas
 const registerSchema = Joi.object({
@@ -18,17 +15,6 @@ const loginSchema = Joi.object({
     password: Joi.string().required()
 });
 
-// Helper to read users
-const getUsers = () => {
-    const data = fs.readFileSync(usersFilePath, 'utf8');
-    return JSON.parse(data);
-};
-
-// Helper to save users
-const saveUsers = (users) => {
-    fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
-};
-
 exports.register = async (req, res, next) => {
     try {
         const { error } = registerSchema.validate(req.body);
@@ -39,7 +25,7 @@ exports.register = async (req, res, next) => {
         }
 
         const { email, password, name } = req.body;
-        const users = getUsers();
+        const users = dbService.read('users.json');
 
         // Check if user exists
         if (users.find(u => u.email === email)) {
@@ -60,7 +46,7 @@ exports.register = async (req, res, next) => {
         };
 
         users.push(newUser);
-        saveUsers(users);
+        dbService.write('users.json', users);
 
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
@@ -78,7 +64,7 @@ exports.login = async (req, res, next) => {
         }
 
         const { email, password } = req.body;
-        const users = getUsers();
+        const users = dbService.read('users.json');
 
         const user = users.find(u => u.email === email);
         if (!user) {
