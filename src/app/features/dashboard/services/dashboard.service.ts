@@ -33,10 +33,10 @@ export class DashboardService {
     getGlobalStats(): Observable<DashboardStats> {
         // Mock data based on the current state of the "Empire"
         return of({
-            activeProjects: 3,
-            totalRevenue: 12500, // Monthly recurring revenue (simulated)
-            averageImpact: 8.2,
-            goalsAchieved: 4
+            activeProjects: 0,
+            totalRevenue: 0,
+            averageImpact: 0,
+            goalsAchieved: 0
         });
     }
 
