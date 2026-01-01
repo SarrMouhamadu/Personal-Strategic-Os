@@ -1,4 +1,15 @@
+const Joi = require('joi');
 const dbService = require('../services/db.service');
+
+const decisionSchema = Joi.object({
+    title: Joi.string().min(3).required(),
+    context: Joi.string().required(),
+    options: Joi.array().items(Joi.string()).required(),
+    outcome: Joi.string().required(),
+    impactScore: Joi.number().min(0).max(10).required(),
+    date: Joi.string().isoDate().optional(),
+    tags: Joi.array().items(Joi.string()).optional()
+});
 
 exports.getDecisions = (req, res, next) => {
     try {

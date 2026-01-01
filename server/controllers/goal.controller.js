@@ -1,4 +1,16 @@
+const Joi = require('joi');
 const dbService = require('../services/db.service');
+
+const goalSchema = Joi.object({
+    title: Joi.string().min(3).required(),
+    targetValue: Joi.number().required(),
+    currentValue: Joi.number().optional(),
+    unit: Joi.string().required(),
+    deadline: Joi.string().isoDate().required(),
+    category: Joi.string().valid('PERSONAL', 'PROFESSIONAL', 'FINANCIAL', 'NETWORK').required(),
+    status: Joi.string().valid('TODO', 'IN_PROGRESS', 'COMPLETED').default('TODO'),
+    year: Joi.number().integer().min(2020).max(2100).required()
+});
 
 exports.getGoals = (req, res, next) => {
     try {
