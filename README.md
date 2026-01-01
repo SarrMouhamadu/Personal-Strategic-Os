@@ -1,16 +1,27 @@
 # Personal Strategic OS
 
-## Vision
-Une application web conçue pour centraliser, piloter et valoriser l’ensemble de mes activités en 2026.
-La plateforme regroupe mes projets technologiques, mes décisions stratégiques, mon réseau, mes apprentissages et mes indicateurs d’impact dans un seul espace sécurisé.
+## Executive Overview
+The Personal Strategic OS is a specialized management platform designed to centralize and optimize strategic activities for 2026. This system serves as a unified command center for technological projects, strategic decision-making, professional networking, and impact measurement.
 
-## Objectifs
-Pensée comme un véritable centre de commandement personnel et entrepreneurial, elle intègre :
-- Des outils d’analyse
-- Du suivi et de l’aide à la décision
-- Une approche IA & RGPD by design
+## Core Capabilities
+The platform is built on a robust architecture providing:
+- Strategic Analysis: Integrated SWOT matrices and KPI tracking per project.
+- Knowledge Management: Centralized repository for strategic learning and documents.
+- Network Intelligence: Professional CRM with interaction tracking and opportunity pipeline.
+- Compliance & Security: Role-based access control, data classification, and comprehensive audit logging.
+- Impact Analytics: Data-driven visualization of social, environmental, and personal impact.
 
-L’objectif est de transformer les actions quotidiennes en actifs stratégiques mesurables et d’accélérer la prise de décision, la croissance des projets et l’impact réel.
+## Security Architecture
+The system implements a multi-layer security approach:
+- Authentication: Secure JWT-based session management.
+- Authorization: Granular role-based access control (Private, Team, Public).
+- Data Protection: Classification of sensitive data (Secret, Confidential).
+- Auditability: Real-time logging of all sensitive operations and data access.
 
-## Méthodologie
-Le développement suit une approche itérative basée sur des User Stories fournies au fil de l'eau.
+## Technical Stack
+- Frontend: Angular with Tailwind CSS for a premium, responsive interface.
+- Backend: Node.js and Express for high-performance API services.
+- Data Persistence: Structured JSON-based storage for agility.
+
+## Implementation Methodology
+The project follows a rigorous iterative development lifecycle, focusing on security by design and strategic alignment.
