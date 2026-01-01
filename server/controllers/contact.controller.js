@@ -1,4 +1,22 @@
+const Joi = require('joi');
 const dbService = require('../services/db.service');
+
+const contactSchema = Joi.object({
+    name: Joi.string().min(2).required(),
+    role: Joi.string().required(),
+    company: Joi.string().required(),
+    email: Joi.string().email().required(),
+    location: Joi.string().required(),
+    linkedin: Joi.string().uri().allow(''),
+    tags: Joi.array().items(Joi.string()),
+    interactions: Joi.array().items(Joi.object()).optional()
+});
+
+const interactionSchema = Joi.object({
+    type: Joi.string().valid('EMAIL', 'CALL', 'MEETING', 'LUNCH', 'OTHER').required(),
+    date: Joi.string().isoDate().required(),
+    summary: Joi.string().required()
+});
 
 exports.getAllContacts = (req, res, next) => {
     try {
@@ -33,7 +51,7 @@ exports.createContact = (req, res, next) => {
         };
 
         contacts.push(newContact);
-        saveContactsData(contacts);
+        dbService.write('contacts.json', contacts);
         res.status(201).json(newContact);
     } catch (error) {
         next(error);
@@ -44,7 +62,7 @@ exports.updateContact = (req, res, next) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
-        const contacts = getContactsData();
+        const contacts = dbService.read('contacts.json');
 
         const index = contacts.findIndex(c => c.id === id && c.userId === userId);
         if (index === -1) {
@@ -72,7 +90,7 @@ exports.deleteContact = (req, res, next) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
-        const contacts = getContactsData();
+        const contacts = dbService.read('contacts.json');
         const filtered = contacts.filter(c => !(c.id === id && c.userId === userId));
 
         if (contacts.length === filtered.length) {

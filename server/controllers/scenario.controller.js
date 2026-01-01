@@ -1,34 +1,9 @@
-const fs = require('fs');
-const path = require('path');
-const Joi = require('joi');
-
-const scenarioSchema = Joi.object({
-    projectId: Joi.string().required(),
-    name: Joi.string().min(2).required(),
-    description: Joi.string().required(),
-    status: Joi.string().valid('PROPOSED', 'APPROVED', 'REJECTED').default('PROPOSED'),
-    tags: Joi.array().items(Joi.string()).optional()
-});
-
-const scenariosFilePath = path.join(__dirname, '../data/scenarios.json');
-
-const getScenariosData = () => {
-    try {
-        const data = fs.readFileSync(scenariosFilePath, 'utf8');
-        return JSON.parse(data);
-    } catch (e) {
-        return [];
-    }
-};
-
-const saveScenariosData = (scenarios) => {
-    fs.writeFileSync(scenariosFilePath, JSON.stringify(scenarios, null, 2));
-};
+const dbService = require('../services/db.service');
 
 exports.getScenariosByProject = (req, res, next) => {
     try {
         const { projectId } = req.params;
-        const scenarios = getScenariosData();
+        const scenarios = dbService.read('scenarios.json');
         const projectScenarios = scenarios.filter(s => s.projectId === projectId);
         res.json(projectScenarios);
     } catch (error) {
@@ -47,7 +22,7 @@ exports.createScenario = (req, res, next) => {
 
         const userId = req.user.id;
         const scenarioData = req.body;
-        const scenarios = getScenariosData();
+        const scenarios = dbService.read('scenarios.json');
 
         const newScenario = {
             ...scenarioData,
@@ -57,7 +32,7 @@ exports.createScenario = (req, res, next) => {
         };
 
         scenarios.push(newScenario);
-        saveScenariosData(scenarios);
+        dbService.write('scenarios.json', scenarios);
         res.status(201).json(newScenario);
     } catch (error) {
         next(error);
@@ -67,7 +42,7 @@ exports.createScenario = (req, res, next) => {
 exports.deleteScenario = (req, res, next) => {
     try {
         const { id } = req.params;
-        const scenarios = getScenariosData();
+        const scenarios = dbService.read('scenarios.json');
         const filtered = scenarios.filter(s => s.id !== id);
 
         if (scenarios.length === filtered.length) {
@@ -76,7 +51,7 @@ exports.deleteScenario = (req, res, next) => {
             throw err;
         }
 
-        saveScenariosData(filtered);
+        dbService.write('scenarios.json', filtered);
         res.json({ message: 'Scenario deleted' });
     } catch (error) {
         next(error);

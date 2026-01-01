@@ -1,4 +1,14 @@
+const Joi = require('joi');
 const dbService = require('../services/db.service');
+
+const profileSchema = Joi.object({
+    fullName: Joi.string().min(2).required(),
+    tagline: Joi.string().allow(''),
+    bio: Joi.string().allow(''),
+    roles: Joi.array().items(Joi.string()),
+    skills: Joi.array().items(Joi.string()),
+    socialLinks: Joi.object().optional()
+});
 
 exports.getProfile = (req, res, next) => {
     try {
