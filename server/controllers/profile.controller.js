@@ -1,35 +1,9 @@
-const fs = require('fs');
-const path = require('path');
-const Joi = require('joi');
-
-const profileSchema = Joi.object({
-    fullName: Joi.string().min(2).required(),
-    tagline: Joi.string().allow(''),
-    bio: Joi.string().allow(''),
-    roles: Joi.array().items(Joi.string()),
-    skills: Joi.array().items(Joi.string()),
-    socialLinks: Joi.object().optional()
-});
-
-const profilesFilePath = path.join(__dirname, '../data/profiles.json');
-
-const getProfiles = () => {
-    try {
-        const data = fs.readFileSync(profilesFilePath, 'utf8');
-        return JSON.parse(data);
-    } catch (e) {
-        return [];
-    }
-};
-
-const saveProfiles = (profiles) => {
-    fs.writeFileSync(profilesFilePath, JSON.stringify(profiles, null, 2));
-};
+const dbService = require('../services/db.service');
 
 exports.getProfile = (req, res, next) => {
     try {
         const userId = req.user.id;
-        const profiles = getProfiles();
+        const profiles = dbService.read('profiles.json');
         const profile = profiles.find(p => p.userId === userId);
 
         if (!profile) {
@@ -60,7 +34,7 @@ exports.updateProfile = (req, res, next) => {
 
         const userId = req.user.id;
         const profileData = req.body;
-        const profiles = getProfiles();
+        const profiles = dbService.read('profiles.json');
 
         const index = profiles.findIndex(p => p.userId === userId);
         const updatedProfile = { ...profileData, userId };
@@ -71,7 +45,7 @@ exports.updateProfile = (req, res, next) => {
             profiles.push(updatedProfile);
         }
 
-        saveProfiles(profiles);
+        dbService.write('profiles.json', profiles);
         res.json(updatedProfile);
     } catch (error) {
         next(error);

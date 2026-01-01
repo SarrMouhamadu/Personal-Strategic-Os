@@ -55,7 +55,7 @@ exports.updateGoal = (req, res, next) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
-        const goals = getGoalsData();
+        const goals = dbService.read('goals.json');
 
         const index = goals.findIndex(g => g.id === id && g.userId === userId);
         if (index === -1) {
@@ -72,7 +72,7 @@ exports.updateGoal = (req, res, next) => {
         }
 
         goals[index] = { ...goals[index], ...req.body };
-        saveGoalsData(goals);
+        dbService.write('goals.json', goals);
         res.json(goals[index]);
     } catch (error) {
         next(error);
