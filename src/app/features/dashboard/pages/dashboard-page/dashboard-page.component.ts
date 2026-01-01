@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DashboardService, DashboardStats, ImpactDimension, Activity } from '../../services/dashboard.service';
+import { AnalyticsService, AnnualSummary } from '../../../../core/services/analytics.service';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -28,6 +29,36 @@ import { Observable } from 'rxjs';
 
       <div class="container mx-auto px-6 py-8 space-y-8">
         
+        <!-- BUS-19: Annual Activity Summary -->
+        <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100" *ngIf="annualSummary$ | async as summary">
+           <div class="flex items-center justify-between mb-8">
+              <div>
+                 <h2 class="text-2xl font-bold text-slate-900">{{ summary.year }} Activity Aggregation</h2>
+                 <p class="text-slate-500">Global performance across all strategic dimensions.</p>
+              </div>
+              <div class="flex gap-4">
+                 <div class="text-center">
+                    <div class="text-2xl font-bold text-indigo-600">{{ summary.goals.completionRate }}%</div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Goal Completion</div>
+                 </div>
+                 <div class="text-center">
+                    <div class="text-2xl font-bold text-emerald-600">{{ summary.projects.total }}</div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Projects</div>
+                 </div>
+              </div>
+           </div>
+
+           <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div *ngFor="let dim of ['PERSONAL', 'NETWORK', 'SOCIAL', 'ENVIRONMENTAL']" class="p-4 rounded-xl bg-slate-50 border border-slate-100 group hover:border-indigo-200 transition-colors">
+                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{{ dim }} Impact</div>
+                 <div class="flex items-end justify-between">
+                    <div class="text-2xl font-bold text-slate-900">{{ summary.impact[dim] }}<span class="text-xs text-slate-400 font-normal">/10</span></div>
+                    <div class="h-8 w-1 bg-indigo-100 rounded-full group-hover:bg-indigo-300 transition-colors"></div>
+                 </div>
+              </div>
+           </div>
+        </div>
+
         <!-- Top Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" *ngIf="stats$ | async as stats">
           
@@ -202,13 +233,18 @@ export class DashboardPageComponent implements OnInit {
   impact$!: Observable<ImpactDimension[]>;
   activity$!: Observable<Activity[]>;
   financials$!: Observable<any>;
+  annualSummary$!: Observable<AnnualSummary | undefined>;
 
-  constructor(private dashboardService: DashboardService) { }
+  constructor(
+    private dashboardService: DashboardService,
+    private analyticsService: AnalyticsService
+  ) { }
 
   ngOnInit(): void {
     this.stats$ = this.dashboardService.getGlobalStats();
     this.impact$ = this.dashboardService.getImpactRadarData();
     this.activity$ = this.dashboardService.getRecentActivity();
     this.financials$ = this.dashboardService.getFinancialSnapshot();
+    this.annualSummary$ = this.analyticsService.getAnnualSummary();
   }
 }

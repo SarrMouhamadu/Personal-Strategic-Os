@@ -6,10 +6,10 @@ import { Opportunity } from '../../../../core/models/opportunity.model';
 import { Observable, map } from 'rxjs';
 
 @Component({
-    selector: 'app-opportunities-pipeline',
-    standalone: true,
-    imports: [CommonModule, RouterLink],
-    template: `
+  selector: 'app-opportunities-pipeline',
+  standalone: true,
+  imports: [CommonModule, RouterLink],
+  template: `
     <div class="min-h-screen bg-slate-50 text-slate-800 p-6 overflow-x-auto">
       <div class="min-w-[1200px] mx-auto">
         
@@ -106,26 +106,26 @@ import { Observable, map } from 'rxjs';
       </div>
     </ng-template>
   `,
-    styles: [`
+  styles: [`
     .custom-scrollbar::-webkit-scrollbar { width: 4px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
   `]
 })
 export class OpportunitiesPipelineComponent implements OnInit {
-    detected$!: Observable<Opportunity[]>;
-    contacted$!: Observable<Opportunity[]>;
-    negotiation$!: Observable<Opportunity[]>;
-    won$!: Observable<Opportunity[]>;
+  detected$!: Observable<Opportunity[]>;
+  contacted$!: Observable<Opportunity[]>;
+  negotiation$!: Observable<Opportunity[]>;
+  won$!: Observable<Opportunity[]>;
 
-    constructor(private networkService: NetworkService) { }
+  constructor(private networkService: NetworkService) { }
 
-    ngOnInit(): void {
-        const allOpps$ = this.networkService.getOpportunities();
+  ngOnInit(): void {
+    const allOpps$ = this.networkService.getOpportunities();
 
-        this.detected$ = allOpps$.pipe(map(ops => ops.filter(o => o.status === 'DETECTED')));
-        this.contacted$ = allOpps$.pipe(map(ops => ops.filter(o => o.status === 'CONTACTED')));
-        this.negotiation$ = allOpps$.pipe(map(ops => ops.filter(o => o.status === 'NEGOTIATION')));
-        this.won$ = allOpps$.pipe(map(ops => ops.filter(o => o.status === 'WON')));
-    }
+    this.detected$ = allOpps$.pipe(map((ops: Opportunity[]) => ops.filter(o => o.status === 'DETECTED')));
+    this.contacted$ = allOpps$.pipe(map((ops: Opportunity[]) => ops.filter(o => o.status === 'CONTACTED')));
+    this.negotiation$ = allOpps$.pipe(map((ops: Opportunity[]) => ops.filter(o => o.status === 'NEGOTIATION')));
+    this.won$ = allOpps$.pipe(map((ops: Opportunity[]) => ops.filter(o => o.status === 'WON')));
+  }
 }

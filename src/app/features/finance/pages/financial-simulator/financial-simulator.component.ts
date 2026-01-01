@@ -1,12 +1,21 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Scenario } from '../../../../core/models/scenario.model';
+
+interface FinancialScenario {
+  id: string;
+  title: string;
+  type: 'OPTIMISTIC' | 'REALISTIC' | 'PESSIMISTIC';
+  revenueProjection: number;
+  costProjection: number;
+  riskScore: number;
+  notes: string;
+}
 
 @Component({
-    selector: 'app-financial-simulator',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
+  selector: 'app-financial-simulator',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
     <div class="min-h-screen bg-slate-50 text-slate-800 p-6">
       <div class="container mx-auto max-w-6xl">
         
@@ -84,33 +93,33 @@ import { Scenario } from '../../../../core/models/scenario.model';
   `
 })
 export class FinancialSimulatorComponent {
-    scenarios: Scenario[] = [
-        {
-            id: 's1',
-            title: 'Bootstrapping Lean',
-            type: 'PESSIMISTIC',
-            revenueProjection: 15000,
-            costProjection: 5000,
-            riskScore: 20,
-            notes: 'Croissance organique, pas de levée, dépenses minimales.'
-        },
-        {
-            id: 's2',
-            title: 'Fundraising Seed',
-            type: 'OPTIMISTIC',
-            revenueProjection: 0,
-            costProjection: 120000,
-            riskScore: 85,
-            notes: 'Levée de 500k pour accélération agressive avant revenu.'
-        },
-        {
-            id: 's3',
-            title: 'Consulting Hybrid',
-            type: 'REALISTIC',
-            revenueProjection: 80000,
-            costProjection: 20000,
-            riskScore: 40,
-            notes: 'Financement du produit par des missions de freelance.'
-        }
-    ];
+  scenarios: FinancialScenario[] = [
+    {
+      id: 's1',
+      title: 'Bootstrapping Lean',
+      type: 'PESSIMISTIC',
+      revenueProjection: 15000,
+      costProjection: 5000,
+      riskScore: 20,
+      notes: 'Croissance organique, pas de levée, dépenses minimales.'
+    },
+    {
+      id: 's2',
+      title: 'Fundraising Seed',
+      type: 'OPTIMISTIC',
+      revenueProjection: 0,
+      costProjection: 120000,
+      riskScore: 85,
+      notes: 'Levée de 500k pour accélération agressive avant revenu.'
+    },
+    {
+      id: 's3',
+      title: 'Consulting Hybrid',
+      type: 'REALISTIC',
+      revenueProjection: 80000,
+      costProjection: 20000,
+      riskScore: 40,
+      notes: 'Financement du produit par des missions de freelance.'
+    }
+  ];
 }

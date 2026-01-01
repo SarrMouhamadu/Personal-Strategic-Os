@@ -302,32 +302,57 @@ import { FormsModule } from '@angular/forms';
                   </div>
                </section>
 
-               <!-- Impact Scorecard -->
-               <section class="mb-12" *ngIf="project.impact?.length">
-                  <h2 class="text-2xl font-bold text-slate-900 mb-6">Impact Scorecard</h2>
-                  <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div *ngFor="let metric of project.impact" class="relative group">
-                           <div class="flex justify-between items-end mb-2">
-                              <span class="font-bold text-slate-700 text-sm tracking-wide group-hover:text-indigo-600 transition-colors">{{ metric.dimension }}</span>
-                              <span class="font-bold text-slate-900 text-lg">{{ metric.score }}/10</span>
-                           </div>
-                           <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden mb-2">
-                              <div class="h-full rounded-full transition-all duration-500" 
-                                   [style.width.%]="metric.score * 10"
-                                   [ngClass]="{
-                                      'bg-emerald-500': metric.dimension === 'ENVIRONMENTAL',
-                                      'bg-blue-500': metric.dimension === 'SOCIAL',
-                                      'bg-purple-500': metric.dimension === 'PERSONAL',
-                                      'bg-indigo-500': metric.dimension === 'NETWORK'
-                                   }">
-                              </div>
-                           </div>
-                           <p class="text-sm text-slate-500">{{ metric.description }}</p>
-                        </div>
-                     </div>
-                  </div>
-               </section>
+                <!-- Impact Scorecard -->
+                <section class="mb-12">
+                   <div class="flex justify-between items-center mb-6">
+                      <h2 class="text-2xl font-bold text-slate-900">Impact Scorecard</h2>
+                      <button *ngIf="isEditing" (click)="addImpactMetric()" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-widest">+ Add Impact Metric</button>
+                   </div>
+                   
+                   <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                         <div *ngFor="let metric of (isEditing ? editData.impact : project.impact); let i = index" class="relative group">
+                            
+                            <div *ngIf="!isEditing">
+                               <div class="flex justify-between items-end mb-2">
+                                  <span class="font-bold text-slate-700 text-sm tracking-wide group-hover:text-indigo-600 transition-colors">{{ metric.dimension }}</span>
+                                  <span class="font-bold text-slate-900 text-lg">{{ metric.score }}/10</span>
+                               </div>
+                               <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden mb-2">
+                                  <div class="h-full rounded-full transition-all duration-500" 
+                                       [style.width.%]="metric.score * 10"
+                                       [ngClass]="{
+                                          'bg-emerald-500': metric.dimension === 'ENVIRONMENTAL',
+                                          'bg-blue-500': metric.dimension === 'SOCIAL',
+                                          'bg-purple-500': metric.dimension === 'PERSONAL',
+                                          'bg-indigo-500': metric.dimension === 'NETWORK'
+                                       }">
+                                  </div>
+                               </div>
+                               <p class="text-sm text-slate-500">{{ metric.description }}</p>
+                            </div>
+
+                            <div *ngIf="isEditing" class="space-y-3">
+                               <div class="flex gap-2">
+                                  <select [(ngModel)]="metric.dimension" class="text-xs font-bold text-slate-500 bg-slate-50 border border-slate-100 rounded px-2 py-1">
+                                     <option value="PERSONAL">PERSONAL</option>
+                                     <option value="NETWORK">NETWORK</option>
+                                     <option value="SOCIAL">SOCIAL</option>
+                                     <option value="ENVIRONMENTAL">ENVIRONMENTAL</option>
+                                  </select>
+                                  <input type="number" [(ngModel)]="metric.score" min="0" max="10" class="w-16 font-bold text-slate-900 bg-slate-50 border border-slate-100 rounded px-2 py-1">
+                               </div>
+                               <textarea [(ngModel)]="metric.description" placeholder="Description" rows="2" class="w-full text-xs text-slate-500 bg-slate-50 border border-slate-100 rounded px-2 py-1"></textarea>
+                               
+                               <button (click)="removeImpactMetric(i)" class="absolute top-2 right-2 text-rose-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all">
+                                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                               </button>
+                            </div>
+
+                         </div>
+                      </div>
+                   </div>
+                </section>
 
                <!-- SWOT Matrix -->
                <section *ngIf="project.swot">
@@ -690,6 +715,15 @@ export class ProjectDetailPageComponent implements OnInit {
 
    removeKpi(index: number) {
       this.editData.kpis.splice(index, 1);
+   }
+
+   addImpactMetric() {
+      if (!this.editData.impact) this.editData.impact = [];
+      this.editData.impact.push({ dimension: 'PERSONAL', score: 5, description: 'New indicator', lastMeasured: new Date().toISOString().split('T')[0] });
+   }
+
+   removeImpactMetric(index: number) {
+      this.editData.impact.splice(index, 1);
    }
 
    trackByIndex(index: number, item: any): any {

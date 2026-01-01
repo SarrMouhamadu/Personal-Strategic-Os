@@ -6,10 +6,10 @@ import { Contact } from '../../../../core/models/contact.model';
 import { Observable, switchMap } from 'rxjs';
 
 @Component({
-    selector: 'app-contact-detail-page',
-    standalone: true,
-    imports: [CommonModule, RouterLink],
-    template: `
+   selector: 'app-contact-detail-page',
+   standalone: true,
+   imports: [CommonModule, RouterLink],
+   template: `
     <div class="min-h-screen bg-slate-50 text-slate-800" *ngIf="contact$ | async as contact">
       
       <!-- Hero -->
@@ -60,9 +60,9 @@ import { Observable, switchMap } from 'rxjs';
                     <svg class="w-5 h-5 mr-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                     {{ contact.location }}
                  </li>
-                 <li class="flex items-center text-slate-600" *ngIf="contact.linkedInUrl">
+                 <li class="flex items-center text-slate-600" *ngIf="contact.linkedin">
                     <svg class="w-5 h-5 mr-3 text-slate-400" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-                    <a [href]="contact.linkedInUrl" target="_blank" class="hover:text-indigo-600">LinkedIn Profile</a>
+                    <a [href]="contact.linkedin" target="_blank" class="hover:text-indigo-600">LinkedIn Profile</a>
                  </li>
               </ul>
            </section>
@@ -95,7 +95,7 @@ import { Observable, switchMap } from 'rxjs';
                        <h3 class="font-bold text-slate-800 capitalize">{{ interaction.type.toLowerCase() }}</h3>
                        <span class="text-xs font-mono text-slate-400">{{ interaction.date | date:'mediumDate' }}</span>
                     </div>
-                    <p class="text-slate-600">{{ interaction.notes }}</p>
+                    <p class="text-slate-600">{{ interaction.summary }}</p>
                  </div>
               </div>
 
@@ -113,22 +113,22 @@ import { Observable, switchMap } from 'rxjs';
   `
 })
 export class ContactDetailPageComponent implements OnInit {
-    contact$!: Observable<Contact | undefined>;
+   contact$!: Observable<Contact | undefined>;
 
-    constructor(
-        private route: ActivatedRoute,
-        private networkService: NetworkService
-    ) { }
+   constructor(
+      private route: ActivatedRoute,
+      private networkService: NetworkService
+   ) { }
 
-    ngOnInit(): void {
-        this.contact$ = this.route.paramMap.pipe(
-            switchMap(params => {
-                const id = params.get('id');
-                if (id) {
-                    return this.networkService.getContactById(id);
-                }
-                return new Observable<undefined>(sub => sub.next(undefined));
-            })
-        );
-    }
+   ngOnInit(): void {
+      this.contact$ = this.route.paramMap.pipe(
+         switchMap(params => {
+            const id = params.get('id');
+            if (id) {
+               return this.networkService.getContactById(id);
+            }
+            return new Observable<undefined>(sub => sub.next(undefined));
+         })
+      );
+   }
 }

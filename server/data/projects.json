@@ -70,12 +70,14 @@
             {
                 "dimension": "PERSONAL",
                 "score": 10,
-                "description": "Clarté mentale et Focus"
+                "description": "Clarté mentale et Focus",
+                "lastMeasured": "2026-01-01"
             },
             {
                 "dimension": "NETWORK",
                 "score": 6,
-                "description": "Présentation aux investisseurs"
+                "description": "Présentation aux investisseurs",
+                "lastMeasured": "2026-01-01"
             }
         ],
         "accessLevel": "PRIVATE",

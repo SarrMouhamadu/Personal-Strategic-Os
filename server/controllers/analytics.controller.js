@@ -1,27 +1,13 @@
-const fs = require('fs');
-const path = require('path');
-
-const projectsFilePath = path.join(__dirname, '../data/projects.json');
-const goalsFilePath = path.join(__dirname, '../data/goals.json');
-const decisionsFilePath = path.join(__dirname, '../data/decisions.json');
-
-const getData = (filePath) => {
-    try {
-        const data = fs.readFileSync(filePath, 'utf8');
-        return JSON.parse(data);
-    } catch (e) {
-        return [];
-    }
-};
+const dbService = require('../services/db.service');
 
 exports.getAnnualSummary = (req, res) => {
     try {
         const userId = req.user.id;
         const currentYear = new Date().getFullYear().toString();
 
-        const projects = getData(projectsFilePath).filter(p => p.userId === userId);
-        const goals = getData(goalsFilePath).filter(g => g.userId === userId && g.year === currentYear);
-        const decisions = getData(decisionsFilePath).filter(d => d.userId === userId && d.date.startsWith(currentYear));
+        const projects = dbService.read('projects.json').filter(p => p.userId === userId);
+        const goals = dbService.read('goals.json').filter(g => g.userId === userId && g.year === currentYear);
+        const decisions = dbService.read('decisions.json').filter(d => d.userId === userId && d.date.startsWith(currentYear));
 
         // Aggregate Impact
         const impactScores = {

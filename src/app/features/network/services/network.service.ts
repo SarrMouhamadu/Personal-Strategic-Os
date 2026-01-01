@@ -52,4 +52,13 @@ export class NetworkService {
             headers: { 'Authorization': `Bearer ${this.auth.token()}` }
         });
     }
+
+    getOpportunities(): Observable<Opportunity[]> {
+        // Mocking for now as requested by the UI components
+        return of([
+            { id: '1', title: 'Seed Round - VCs', value: 500000, status: 'NEGOTIATION', contactId: 'c1', likelihood: 60 },
+            { id: '2', title: 'Enterprise Partnership', value: 120000, status: 'DETECTED', contactId: 'c2', likelihood: 30 },
+            { id: '3', title: 'Acquisition Offer', value: 2000000, status: 'WON', contactId: 'c3', likelihood: 100 }
+        ]);
+    }
 }

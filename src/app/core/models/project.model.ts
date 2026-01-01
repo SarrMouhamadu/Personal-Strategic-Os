@@ -33,6 +33,7 @@ export interface ImpactMetric {
     dimension: 'SOCIAL' | 'ENVIRONMENTAL' | 'PERSONAL' | 'NETWORK';
     score: number; // 0-10
     description: string;
+    lastMeasured?: string; // ISO Date string
 }
 
 export interface ComplianceAudit {
