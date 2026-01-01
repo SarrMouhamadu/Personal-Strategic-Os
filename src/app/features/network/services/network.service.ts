@@ -13,6 +13,8 @@ export class NetworkService {
     private auth = inject(AuthService);
     private readonly apiUrl = 'http://localhost:3000/api/contacts';
 
+    private readonly oppsUrl = 'http://localhost:3000/api/opportunities';
+
     getContacts(): Observable<Contact[]> {
         return this.http.get<Contact[]>(this.apiUrl, {
             headers: { 'Authorization': `Bearer ${this.auth.token()}` }
@@ -54,11 +56,31 @@ export class NetworkService {
     }
 
     getOpportunities(): Observable<Opportunity[]> {
-        // Mocking for now as requested by the UI components
-        return of([
-            { id: '1', title: 'Seed Round - VCs', value: 500000, status: 'NEGOTIATION', contactId: 'c1', likelihood: 60 },
-            { id: '2', title: 'Enterprise Partnership', value: 120000, status: 'DETECTED', contactId: 'c2', likelihood: 30 },
-            { id: '3', title: 'Acquisition Offer', value: 2000000, status: 'WON', contactId: 'c3', likelihood: 100 }
-        ]);
+        return this.http.get<Opportunity[]>(this.oppsUrl, {
+            headers: { 'Authorization': `Bearer ${this.auth.token()}` }
+        }).pipe(
+            catchError(err => {
+                console.error('Error fetching opportunities', err);
+                return of([]);
+            })
+        );
+    }
+
+    createOpportunity(opp: Partial<Opportunity>): Observable<Opportunity> {
+        return this.http.post<Opportunity>(this.oppsUrl, opp, {
+            headers: { 'Authorization': `Bearer ${this.auth.token()}` }
+        });
+    }
+
+    updateOpportunity(id: string, opp: Partial<Opportunity>): Observable<Opportunity> {
+        return this.http.put<Opportunity>(`${this.oppsUrl}/${id}`, opp, {
+            headers: { 'Authorization': `Bearer ${this.auth.token()}` }
+        });
+    }
+
+    deleteOpportunity(id: string): Observable<any> {
+        return this.http.delete(`${this.oppsUrl}/${id}`, {
+            headers: { 'Authorization': `Bearer ${this.auth.token()}` }
+        });
     }
 }

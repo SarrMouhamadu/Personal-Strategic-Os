@@ -1,60 +1,49 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, catchError, of } from 'rxjs';
 import { Resource } from '../../../core/models/resource.model';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class KnowledgeService {
-
-    private mockResources: Resource[] = [
-        {
-            id: 'r1',
-            title: 'Angular Standalone Components Guide',
-            type: 'ARTICLE',
-            summary: 'Guide officiel sur la migration vers les composants standalone.',
-            url: 'https://angular.io/guide/standalone-components',
-            tags: ['Angular', 'Frontend', 'Best Practices'],
-            projectId: 'p2', // Linked to Personal OS
-            dateAdded: new Date('2025-11-10'),
-            status: 'PROCESSED'
-        },
-        {
-            id: 'r2',
-            title: 'Supabase vs Firebase Pricing',
-            type: 'NOTE',
-            summary: 'Comparatif des coûts pour le scaling. Supabase semble plus avantageux pour le gros volume de lectures.',
-            tags: ['Backend', 'Database', 'Cost'],
-            projectId: 'p1', // Linked to EcoTrack
-            dateAdded: new Date('2025-12-05'),
-            status: 'PROCESSED'
-        },
-        {
-            id: 'r3',
-            title: 'The Lean Startup',
-            type: 'BOOK',
-            summary: 'Concepts clés: MVP, Pivot, Build-Measure-Learn.',
-            tags: ['Strategy', 'Startup'],
-            dateAdded: new Date('2025-01-15'),
-            status: 'ARCHIVED'
-        },
-        {
-            id: 'r4',
-            title: 'Tailwind UI Components',
-            type: 'TOOL',
-            summary: 'Bibliothèque de composants UI premium.',
-            url: 'https://tailwindui.com',
-            tags: ['UI/UX', 'Design'],
-            dateAdded: new Date('2025-12-28'),
-            status: 'TO_PROCESS'
-        }
-    ];
+    private http = inject(HttpClient);
+    private auth = inject(AuthService);
+    private readonly apiUrl = 'http://localhost:3000/api/knowledge';
 
     getResources(): Observable<Resource[]> {
-        return of(this.mockResources);
+        return this.http.get<Resource[]>(this.apiUrl, {
+            headers: { 'Authorization': `Bearer ${this.auth.token()}` }
+        }).pipe(
+            catchError(err => {
+                console.error('Error fetching resources', err);
+                return of([]);
+            })
+        );
     }
 
     getResourcesByProjectId(projectId: string): Observable<Resource[]> {
-        return of(this.mockResources.filter(r => r.projectId === projectId));
+        return this.getResources().pipe(
+            catchError(() => of([]))
+        );
+    }
+
+    createResource(resource: Partial<Resource>): Observable<Resource> {
+        return this.http.post<Resource>(this.apiUrl, resource, {
+            headers: { 'Authorization': `Bearer ${this.auth.token()}` }
+        });
+    }
+
+    updateResource(id: string, resource: Partial<Resource>): Observable<Resource> {
+        return this.http.put<Resource>(`${this.apiUrl}/${id}`, resource, {
+            headers: { 'Authorization': `Bearer ${this.auth.token()}` }
+        });
+    }
+
+    deleteResource(id: string): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/${id}`, {
+            headers: { 'Authorization': `Bearer ${this.auth.token()}` }
+        });
     }
 }

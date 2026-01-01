@@ -14,6 +14,8 @@ const scenarioRoutes = require('./routes/scenario.routes');
 const contactRoutes = require('./routes/contact.routes');
 const auditLogRoutes = require('./routes/audit.routes');
 const analyticsRoutes = require('./routes/analytics.routes');
+const knowledgeRoutes = require('./routes/knowledge.routes');
+const opportunityRoutes = require('./routes/opportunity.routes');
 
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -53,6 +55,8 @@ app.use('/api/scenarios', scenarioRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/audit', auditLogRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/knowledge', knowledgeRoutes);
+app.use('/api/opportunities', opportunityRoutes);
 
 // Base route
 app.get('/', (req, res) => {

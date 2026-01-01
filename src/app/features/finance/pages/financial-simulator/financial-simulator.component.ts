@@ -51,17 +51,17 @@ interface FinancialScenario {
             <div class="space-y-4 mb-8">
               <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
                 <span class="text-slate-500 text-sm">Revenue (Yearly)</span>
-                <span class="font-bold text-slate-900">{{ scenario.revenueProjection | currency:'EUR':'symbol':'1.0-0' }}</span>
+                <span class="font-bold text-slate-900">{{ scenario.revenueProjection | currency:'XOF':'symbol':'1.0-0' }}</span>
               </div>
               <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
                 <span class="text-slate-500 text-sm">Costs (Yearly)</span>
-                <span class="font-bold text-slate-700">-{{ scenario.costProjection | currency:'EUR':'symbol':'1.0-0' }}</span>
+                <span class="font-bold text-slate-700">-{{ scenario.costProjection | currency:'XOF':'symbol':'1.0-0' }}</span>
               </div>
               <div class="flex justify-between items-center p-3 rounded-lg border-t border-slate-200 mt-2">
                 <span class="font-bold text-slate-900">Net Profit</span>
                 <span class="font-bold text-lg" 
                       [ngClass]="(scenario.revenueProjection - scenario.costProjection) > 0 ? 'text-emerald-600' : 'text-red-600'">
-                  {{ (scenario.revenueProjection - scenario.costProjection) | currency:'EUR':'symbol':'1.0-0' }}
+                  {{ (scenario.revenueProjection - scenario.costProjection) | currency:'XOF':'symbol':'1.0-0' }}
                 </span>
               </div>
             </div>
@@ -98,8 +98,8 @@ export class FinancialSimulatorComponent {
       id: 's1',
       title: 'Bootstrapping Lean',
       type: 'PESSIMISTIC',
-      revenueProjection: 15000,
-      costProjection: 5000,
+      revenueProjection: 0,
+      costProjection: 0,
       riskScore: 20,
       notes: 'Croissance organique, pas de levée, dépenses minimales.'
     },
@@ -108,7 +108,7 @@ export class FinancialSimulatorComponent {
       title: 'Fundraising Seed',
       type: 'OPTIMISTIC',
       revenueProjection: 0,
-      costProjection: 120000,
+      costProjection: 0,
       riskScore: 85,
       notes: 'Levée de 500k pour accélération agressive avant revenu.'
     },
@@ -116,8 +116,8 @@ export class FinancialSimulatorComponent {
       id: 's3',
       title: 'Consulting Hybrid',
       type: 'REALISTIC',
-      revenueProjection: 80000,
-      costProjection: 20000,
+      revenueProjection: 0,
+      costProjection: 0,
       riskScore: 40,
       notes: 'Financement du produit par des missions de freelance.'
     }

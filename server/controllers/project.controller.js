@@ -2,10 +2,12 @@ const Joi = require('joi');
 const dbService = require('../services/db.service');
 
 const projectSchema = Joi.object({
-    name: Joi.string().min(3).required(),
+    name: Joi.string().min(2).required(),
+    tagline: Joi.string().allow('').optional(),
     description: Joi.string().required(),
-    status: Joi.string().valid('IDEATION', 'PLANNING', 'BUILD', 'GROWTH', 'STABLE', 'ARCHIVED').required(),
-    accessLevel: Joi.string().valid('PRIVATE', 'PUBLIC').default('PRIVATE'),
+    status: Joi.string().valid('IDEATION', 'PLANNING', 'BUILD', 'DEPLOYED', 'GROWTH', 'STABLE', 'ARCHIVED').required(),
+    accessLevel: Joi.string().valid('PRIVATE', 'TEAM', 'PUBLIC').default('PRIVATE'),
+    techStack: Joi.array().items(Joi.string()).optional(),
     confidentialityLevel: Joi.string().valid('SECRET', 'CONFIDENTIAL').optional(),
     tags: Joi.array().items(Joi.string()).optional(),
     impact: Joi.array().items(Joi.object({
@@ -14,7 +16,7 @@ const projectSchema = Joi.object({
         description: Joi.string().required(),
         lastMeasured: Joi.string().isoDate().optional()
     })).optional()
-});
+}).unknown(true); // Allow unknown keys to avoid strict failure during migration
 
 exports.getProjects = (req, res, next) => {
     try {

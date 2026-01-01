@@ -10,7 +10,7 @@ const contactSchema = Joi.object({
     linkedin: Joi.string().uri().allow(''),
     tags: Joi.array().items(Joi.string()),
     interactions: Joi.array().items(Joi.object()).optional()
-});
+}).unknown(true);
 
 const interactionSchema = Joi.object({
     type: Joi.string().valid('EMAIL', 'CALL', 'MEETING', 'LUNCH', 'OTHER').required(),
