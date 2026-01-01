@@ -1,36 +1,9 @@
-const fs = require('fs');
-const path = require('path');
-const Joi = require('joi');
-
-const decisionSchema = Joi.object({
-    title: Joi.string().min(3).required(),
-    context: Joi.string().required(),
-    options: Joi.array().items(Joi.string()).required(),
-    outcome: Joi.string().required(),
-    impactScore: Joi.number().min(0).max(10).required(),
-    date: Joi.string().isoDate().optional(),
-    tags: Joi.array().items(Joi.string()).optional()
-});
-
-const decisionsFilePath = path.join(__dirname, '../data/decisions.json');
-
-const getDecisionsData = () => {
-    try {
-        const data = fs.readFileSync(decisionsFilePath, 'utf8');
-        return JSON.parse(data);
-    } catch (e) {
-        return [];
-    }
-};
-
-const saveDecisionsData = (decisions) => {
-    fs.writeFileSync(decisionsFilePath, JSON.stringify(decisions, null, 2));
-};
+const dbService = require('../services/db.service');
 
 exports.getDecisions = (req, res, next) => {
     try {
         const userId = req.user.id;
-        const decisions = getDecisionsData();
+        const decisions = dbService.read('decisions.json');
         const userDecisions = decisions.filter(d => d.userId === userId);
         res.json(userDecisions);
     } catch (error) {

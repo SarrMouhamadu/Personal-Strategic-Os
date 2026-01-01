@@ -1,38 +1,10 @@
-const fs = require('fs');
-const path = require('path');
-const Joi = require('joi');
-
-const goalSchema = Joi.object({
-    title: Joi.string().min(3).required(),
-    targetValue: Joi.number().required(),
-    currentValue: Joi.number().optional(),
-    unit: Joi.string().required(),
-    deadline: Joi.string().isoDate().required(),
-    category: Joi.string().valid('PERSONAL', 'PROFESSIONAL', 'FINANCIAL', 'NETWORK').required(),
-    status: Joi.string().valid('TODO', 'IN_PROGRESS', 'COMPLETED').default('TODO'),
-    year: Joi.number().integer().min(2020).max(2100).required()
-});
-
-const goalsFilePath = path.join(__dirname, '../data/goals.json');
-
-const getGoalsData = () => {
-    try {
-        const data = fs.readFileSync(goalsFilePath, 'utf8');
-        return JSON.parse(data);
-    } catch (e) {
-        return [];
-    }
-};
-
-const saveGoalsData = (goals) => {
-    fs.writeFileSync(goalsFilePath, JSON.stringify(goals, null, 2));
-};
+const dbService = require('../services/db.service');
 
 exports.getGoals = (req, res, next) => {
     try {
         const userId = req.user.id;
         const year = parseInt(req.query.year) || new Date().getFullYear();
-        const goals = getGoalsData();
+        const goals = dbService.read('goals.json');
         const userGoals = goals.filter(g => g.userId === userId && g.year === year);
         res.json(userGoals);
     } catch (error) {
