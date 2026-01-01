@@ -5,116 +5,133 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
-    selector: 'app-login-page',
-    standalone: true,
-    imports: [CommonModule, FormsModule, RouterLink],
-    template: `
-    <div class="min-h-screen bg-slate-900 flex items-center justify-center p-6">
-      <div class="max-w-md w-full">
+  selector: 'app-login-page',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterLink],
+  template: `
+    <div class="min-h-screen bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700 flex items-center justify-center p-6 relative overflow-hidden">
+      <!-- Animated background elements -->
+      <div class="absolute inset-0 opacity-10">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-accent rounded-full mix-blend-multiply filter blur-xl animate-pulse-slow"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-primary-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse-slow" style="animation-delay: 1s;"></div>
+      </div>
+
+      <div class="max-w-md w-full relative z-10 animate-fade-in-up">
         <!-- Logo/Header -->
         <div class="text-center mb-10">
-          <div class="inline-block bg-indigo-600 text-white p-3 rounded-2xl font-bold text-2xl shadow-lg mb-4">OS</div>
-          <h1 class="text-3xl font-extrabold text-white tracking-tight">Strategic OS</h1>
-          <p class="text-slate-400 mt-2">Connectez-vous pour accéder à votre console de commandement.</p>
+          <div class="inline-block bg-gradient-accent text-primary-800 p-4 rounded-2xl font-bold text-3xl shadow-accent mb-4 animate-bounce-subtle">OS</div>
+          <h1 class="text-4xl font-extrabold text-white tracking-tight">Strategic OS</h1>
+          <p class="text-accent-300 mt-3 text-lg">Votre centre de commandement personnel</p>
         </div>
 
         <!-- Auth Card -->
-        <div class="bg-slate-800 rounded-3xl p-8 shadow-2xl border border-slate-700/50 backdrop-blur-xl">
-          <div class="flex mb-8 bg-slate-900/50 p-1 rounded-xl">
+        <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-primary-lg border border-white/20 animate-scale-in">
+          <div class="flex mb-8 bg-primary-900/30 p-1.5 rounded-xl">
             <button (click)="isLogin.set(true)" 
-                    class="flex-1 py-2 rounded-lg text-sm font-bold transition-all"
-                    [ngClass]="isLogin() ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'">
+                    class="flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300"
+                    [ngClass]="isLogin() ? 'bg-accent text-primary-800 shadow-accent transform scale-105' : 'text-accent-200 hover:text-white'">
               Connexion
             </button>
             <button (click)="isLogin.set(false)" 
-                    class="flex-1 py-2 rounded-lg text-sm font-bold transition-all"
-                    [ngClass]="!isLogin() ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'">
+                    class="flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300"
+                    [ngClass]="!isLogin() ? 'bg-accent text-primary-800 shadow-accent transform scale-105' : 'text-accent-200 hover:text-white'">
               S'inscrire
             </button>
           </div>
 
           <form (submit)="onSubmit()" class="space-y-5">
-            <div *ngIf="!isLogin()">
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Nom Complet</label>
+            <div *ngIf="!isLogin()" class="animate-fade-in-down">
+              <label class="block text-xs font-bold text-accent-200 uppercase tracking-widest mb-2 ml-1">Nom Complet</label>
               <input type="text" [(ngModel)]="name" name="name" required
-                     class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all">
+                     class="w-full bg-white/5 border-2 border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-accent focus:bg-white/10 transition-all duration-300">
             </div>
 
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Email</label>
+            <div class="animate-fade-in-down" style="animation-delay: 0.1s;">
+              <label class="block text-xs font-bold text-accent-200 uppercase tracking-widest mb-2 ml-1">Email</label>
               <input type="email" [(ngModel)]="email" name="email" required
-                     class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all">
+                     class="w-full bg-white/5 border-2 border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-accent focus:bg-white/10 transition-all duration-300">
             </div>
 
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Mot de Passe</label>
+            <div class="animate-fade-in-down" style="animation-delay: 0.2s;">
+              <label class="block text-xs font-bold text-accent-200 uppercase tracking-widest mb-2 ml-1">Mot de Passe</label>
               <input type="password" [(ngModel)]="password" name="password" required
-                     class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all">
+                     class="w-full bg-white/5 border-2 border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-accent focus:bg-white/10 transition-all duration-300">
             </div>
 
-            <div *ngIf="errorMessage()" class="text-rose-400 text-sm bg-rose-400/10 p-3 rounded-lg border border-rose-400/20 animate-pulse">
+            <div *ngIf="errorMessage()" class="text-accent-800 text-sm bg-accent/90 p-4 rounded-xl border-2 border-accent-400 animate-fade-in font-medium">
               {{ errorMessage() }}
             </div>
 
             <button type="submit" [disabled]="loading()"
-                    class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-500/20 transition-all transform hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
-              <span *ngIf="!loading()">{{ isLogin() ? 'Se Connecter' : 'Créer un Compte' }}</span>
-              <span *ngIf="loading()">{{ isLogin() ? 'Connexion...' : 'Création...' }}</span>
+                    class="w-full bg-gradient-accent hover:shadow-accent-lg text-primary-800 font-bold py-4 rounded-xl shadow-accent transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+              <span *ngIf="!loading()" class="flex items-center justify-center gap-2">
+                {{ isLogin() ? 'Se Connecter' : 'Créer un Compte' }}
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                </svg>
+              </span>
+              <span *ngIf="loading()" class="flex items-center justify-center gap-2">
+                <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                {{ isLogin() ? 'Connexion...' : 'Création...' }}
+              </span>
             </button>
           </form>
         </div>
 
-        <p class="text-center text-slate-500 mt-8 text-sm">
-          &copy; 2025 Strategic OS. Sécurité par JWT & Bcrypt.
+        <p class="text-center text-accent-300/60 mt-8 text-sm">
+          &copy; 2026 Strategic OS. Sécurité par JWT & Bcrypt.
         </p>
       </div>
     </div>
   `,
-    styles: []
+  styles: []
 })
 export class LoginPageComponent {
-    private authService = inject(AuthService);
-    private router = inject(Router);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
-    isLogin = signal(true);
-    loading = signal(false);
-    errorMessage = signal<string | null>(null);
+  isLogin = signal(true);
+  loading = signal(false);
+  errorMessage = signal<string | null>(null);
 
-    email = '';
-    password = '';
-    name = '';
+  email = '';
+  password = '';
+  name = '';
 
-    onSubmit() {
-        this.loading.set(true);
-        this.errorMessage.set(null);
+  onSubmit() {
+    this.loading.set(true);
+    this.errorMessage.set(null);
 
-        if (this.isLogin()) {
-            this.authService.login({ email: this.email, password: this.password }).subscribe({
-                next: (res) => {
-                    if (res) {
-                        this.router.navigate(['/dashboard']);
-                    } else {
-                        this.errorMessage.set('Identifiants invalides ou erreur serveur.');
-                        this.loading.set(false);
-                    }
-                },
-                error: () => {
-                    this.errorMessage.set('Une erreur est survenue.');
-                    this.loading.set(false);
-                }
-            });
-        } else {
-            this.authService.register({ email: this.email, password: this.password, name: this.name }).subscribe({
-                next: (res) => {
-                    if (res) {
-                        this.isLogin.set(true);
-                        this.errorMessage.set('Compte créé ! Connectez-vous.');
-                    } else {
-                        this.errorMessage.set('Erreur lors de la création du compte.');
-                    }
-                    this.loading.set(false);
-                }
-            });
+    if (this.isLogin()) {
+      this.authService.login({ email: this.email, password: this.password }).subscribe({
+        next: (res) => {
+          if (res) {
+            this.router.navigate(['/dashboard']);
+          } else {
+            this.errorMessage.set('Identifiants invalides ou erreur serveur.');
+            this.loading.set(false);
+          }
+        },
+        error: () => {
+          this.errorMessage.set('Une erreur est survenue.');
+          this.loading.set(false);
         }
+      });
+    } else {
+      this.authService.register({ email: this.email, password: this.password, name: this.name }).subscribe({
+        next: (res) => {
+          if (res) {
+            this.isLogin.set(true);
+            this.errorMessage.set('Compte créé ! Connectez-vous.');
+          } else {
+            this.errorMessage.set('Erreur lors de la création du compte.');
+          }
+          this.loading.set(false);
+        }
+      });
     }
+  }
 }
