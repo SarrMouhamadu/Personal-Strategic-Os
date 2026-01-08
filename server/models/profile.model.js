@@ -4,13 +4,19 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING,
             primaryKey: true
         },
+        fullName: {
+            type: Sequelize.STRING
+        },
+        tagline: {
+            type: Sequelize.STRING
+        },
         bio: {
             type: Sequelize.TEXT
         },
         vision: {
             type: Sequelize.TEXT
         },
-        values: {
+        roles: {
             type: Sequelize.JSON
         },
         skills: {

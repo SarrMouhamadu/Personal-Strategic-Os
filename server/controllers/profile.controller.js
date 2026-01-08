@@ -6,8 +6,8 @@ const profileSchema = Joi.object({
     fullName: Joi.string().min(2).required(),
     tagline: Joi.string().allow(''),
     bio: Joi.string().allow(''),
-    roles: Joi.array().items(Joi.string()),
-    skills: Joi.array().items(Joi.string()),
+    roles: Joi.array().items(Joi.any()),
+    skills: Joi.array().items(Joi.any()),
     socialLinks: Joi.object().optional()
 });
 

@@ -63,6 +63,31 @@ import { CommonModule } from '@angular/common';
       <main class="flex-grow bg-slate-50 dark:bg-slate-950 transition-colors">
         <router-outlet></router-outlet>
       </main>
+
+      <!-- Footer / Credits -->
+      <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-8 transition-colors">
+        <div class="container mx-auto px-12 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div class="flex items-center space-x-2">
+            <span class="text-slate-400 dark:text-slate-500 text-sm font-medium">Développé par</span>
+            <span class="text-slate-900 dark:text-white font-bold tracking-tight">Mouhamadou Sarr</span>
+          </div>
+          
+          <div class="flex items-center space-x-6">
+            <a href="tel:+221777091913" class="flex items-center text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group">
+              <svg class="w-4 h-4 mr-2 opacity-60 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+              <span class="text-xs font-mono">77 709 19 13</span>
+            </a>
+            <a href="mailto:sarrmahmoud232@gmail.com" class="flex items-center text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group">
+              <svg class="w-4 h-4 mr-2 opacity-60 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+              <span class="text-xs font-mono">sarrmahmoud232@gmail.com</span>
+            </a>
+          </div>
+
+          <div class="text-[10px] uppercase tracking-widest font-bold text-slate-300 dark:text-slate-700">
+            Strategic Platform &copy; 2026
+          </div>
+        </div>
+      </footer>
     </div>
   `,
   styleUrl: './app.scss'
