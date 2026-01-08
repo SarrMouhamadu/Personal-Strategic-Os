@@ -58,4 +58,6 @@ export interface Project {
     kpis?: Kpi[];
     impact?: ImpactMetric[];
     compliance?: ComplianceAudit;
+    createdAt?: string;
+    updatedAt?: string;
 }

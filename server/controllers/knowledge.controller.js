@@ -1,5 +1,6 @@
 const Joi = require('joi');
-const dbService = require('../services/db.service');
+const db = require('../models');
+const Knowledge = db.knowledge;
 
 const resourceSchema = Joi.object({
     title: Joi.string().min(3).required(),
@@ -11,18 +12,17 @@ const resourceSchema = Joi.object({
     status: Joi.string().valid('TO_PROCESS', 'PROCESSED', 'ARCHIVED').default('TO_PROCESS')
 });
 
-exports.getAllResources = (req, res, next) => {
+exports.getAllResources = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const resources = dbService.read('knowledge.json');
-        const userResources = resources.filter(r => r.userId === userId);
-        res.json(userResources);
+        const resources = await Knowledge.findAll({ where: { userId } });
+        res.json(resources);
     } catch (error) {
         next(error);
     }
 };
 
-exports.createResource = (req, res, next) => {
+exports.createResource = async (req, res, next) => {
     try {
         const { error } = resourceSchema.validate(req.body);
         if (error) {
@@ -32,64 +32,58 @@ exports.createResource = (req, res, next) => {
         }
 
         const userId = req.user.id;
-        const resources = dbService.read('knowledge.json');
-        const newResource = {
+        const newResource = await Knowledge.create({
             ...req.body,
             id: Date.now().toString(),
             userId,
-            dateAdded: new Date().toISOString()
-        };
+            dateAdded: new Date()
+        });
 
-        resources.push(newResource);
-        dbService.write('knowledge.json', resources);
         res.status(201).json(newResource);
     } catch (error) {
         next(error);
     }
 };
 
-exports.updateResource = (req, res, next) => {
+exports.updateResource = async (req, res, next) => {
     try {
         const { id } = req.params;
         const userId = req.user.id;
-        const resources = dbService.read('knowledge.json');
-        const index = resources.findIndex(r => r.id === id && r.userId === userId);
-
-        if (index === -1) {
+        
+        const resource = await Knowledge.findOne({ where: { id, userId } });
+        if (!resource) {
             const err = new Error('Resource not found');
             err.statusCode = 404;
             throw err;
         }
 
-        const { error } = resourceSchema.validate({ ...resources[index], ...req.body });
+        const { error } = resourceSchema.validate({ ...resource.toJSON(), ...req.body });
         if (error) {
             const err = new Error(error.details[0].message);
             err.statusCode = 400;
             throw err;
         }
 
-        resources[index] = { ...resources[index], ...req.body };
-        dbService.write('knowledge.json', resources);
-        res.json(resources[index]);
+        await resource.update(req.body);
+        res.json(resource);
     } catch (error) {
         next(error);
     }
 };
 
-exports.deleteResource = (req, res, next) => {
+exports.deleteResource = async (req, res, next) => {
     try {
         const { id } = req.params;
         const userId = req.user.id;
-        const resources = dbService.read('knowledge.json');
-        const filtered = resources.filter(r => !(r.id === id && r.userId === userId));
-
-        if (resources.length === filtered.length) {
+        
+        const resource = await Knowledge.findOne({ where: { id, userId } });
+        if (!resource) {
             const err = new Error('Resource not found');
             err.statusCode = 404;
             throw err;
         }
 
-        dbService.write('knowledge.json', filtered);
+        await resource.destroy();
         res.json({ message: 'Resource deleted' });
     } catch (error) {
         next(error);

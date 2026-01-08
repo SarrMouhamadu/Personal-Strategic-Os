@@ -1,5 +1,6 @@
 const Joi = require('joi');
-const dbService = require('../services/db.service');
+const db = require('../models');
+const Opportunity = db.opportunities;
 
 const opportunitySchema = Joi.object({
     title: Joi.string().min(3).required(),
@@ -10,18 +11,17 @@ const opportunitySchema = Joi.object({
     notes: Joi.string().allow('').optional()
 });
 
-exports.getAllOpportunities = (req, res, next) => {
+exports.getAllOpportunities = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const opportunities = dbService.read('opportunities.json');
-        const userOpps = opportunities.filter(o => o.userId === userId);
-        res.json(userOpps);
+        const opportunities = await Opportunity.findAll({ where: { userId } });
+        res.json(opportunities);
     } catch (error) {
         next(error);
     }
 };
 
-exports.createOpportunity = (req, res, next) => {
+exports.createOpportunity = async (req, res, next) => {
     try {
         const { error } = opportunitySchema.validate(req.body);
         if (error) {
@@ -31,64 +31,57 @@ exports.createOpportunity = (req, res, next) => {
         }
 
         const userId = req.user.id;
-        const opportunities = dbService.read('opportunities.json');
-        const newOpp = {
+        const newOpp = await Opportunity.create({
             ...req.body,
             id: Date.now().toString(),
-            userId,
-            createdAt: new Date().toISOString()
-        };
+            userId
+        });
 
-        opportunities.push(newOpp);
-        dbService.write('opportunities.json', opportunities);
         res.status(201).json(newOpp);
     } catch (error) {
         next(error);
     }
 };
 
-exports.updateOpportunity = (req, res, next) => {
+exports.updateOpportunity = async (req, res, next) => {
     try {
         const { id } = req.params;
         const userId = req.user.id;
-        const opportunities = dbService.read('opportunities.json');
-        const index = opportunities.findIndex(o => o.id === id && o.userId === userId);
-
-        if (index === -1) {
+        
+        const opportunity = await Opportunity.findOne({ where: { id, userId } });
+        if (!opportunity) {
             const err = new Error('Opportunity not found');
             err.statusCode = 404;
             throw err;
         }
 
-        const { error } = opportunitySchema.validate({ ...opportunities[index], ...req.body });
+        const { error } = opportunitySchema.validate({ ...opportunity.toJSON(), ...req.body });
         if (error) {
             const err = new Error(error.details[0].message);
             err.statusCode = 400;
             throw err;
         }
 
-        opportunities[index] = { ...opportunities[index], ...req.body };
-        dbService.write('opportunities.json', opportunities);
-        res.json(opportunities[index]);
+        await opportunity.update(req.body);
+        res.json(opportunity);
     } catch (error) {
         next(error);
     }
 };
 
-exports.deleteOpportunity = (req, res, next) => {
+exports.deleteOpportunity = async (req, res, next) => {
     try {
         const { id } = req.params;
         const userId = req.user.id;
-        const opportunities = dbService.read('opportunities.json');
-        const filtered = opportunities.filter(o => !(o.id === id && o.userId === userId));
-
-        if (opportunities.length === filtered.length) {
+        
+        const opportunity = await Opportunity.findOne({ where: { id, userId } });
+        if (!opportunity) {
             const err = new Error('Opportunity not found');
             err.statusCode = 404;
             throw err;
         }
 
-        dbService.write('opportunities.json', filtered);
+        await opportunity.destroy();
         res.json({ message: 'Opportunity deleted' });
     } catch (error) {
         next(error);

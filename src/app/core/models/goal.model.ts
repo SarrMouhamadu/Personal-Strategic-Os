@@ -2,7 +2,7 @@ export type GoalType = 'ANNUAL' | 'QUARTERLY';
 export type GoalStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'AT_RISK';
 
 export interface KeyResult {
-    id: string;
+    id?: string;
     description: string;
     targetValue: number;
     currentValue: number;

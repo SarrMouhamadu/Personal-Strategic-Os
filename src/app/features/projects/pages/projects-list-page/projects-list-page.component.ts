@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ProjectsService } from '../../services/projects.service';
 import { Project, ProjectStatus } from '../../../../core/models/project.model';
-import { Observable, map, BehaviorSubject, switchMap } from 'rxjs';
+import { Observable, map, BehaviorSubject, switchMap, shareReplay } from 'rxjs';
 
 @Component({
   selector: 'app-projects-list-page',
@@ -176,7 +176,8 @@ export class ProjectsListPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.projects$ = this.refreshSubject.pipe(
-      switchMap(() => this.projectsService.getProjects())
+      switchMap(() => this.projectsService.getProjects()),
+      shareReplay(1)
     );
   }
 

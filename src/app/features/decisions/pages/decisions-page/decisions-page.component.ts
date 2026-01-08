@@ -1,14 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { DecisionsService } from '../../services/decisions.service';
 import { AiService } from '../../../../core/services/ai.service';
-import { Decision } from '../../../../core/models/decision.model';
+import { Decision, DecisionStatus, DecisionImpact } from '../../../../core/models/decision.model';
 import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-decisions-page',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="min-h-screen bg-slate-50 text-slate-800 p-6">
       <div class="container mx-auto max-w-4xl">
@@ -18,11 +19,78 @@ import { Observable } from 'rxjs';
             <h1 class="text-3xl font-bold text-slate-900">Decision Log</h1>
             <p class="text-slate-500 mt-2">Mémoire stratégique et historique des choix.</p>
           </div>
-          <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-sm transition-colors flex items-center">
+          <button (click)="openModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-sm transition-colors flex items-center">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             New Decision
           </button>
         </header>
+
+        <!-- New Decision Modal -->
+        <div *ngIf="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fadeIn">
+           <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden animate-slideUp">
+              <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                 <h2 class="text-xl font-bold text-slate-900">Add Strategic Decision</h2>
+                 <button (click)="closeModal()" class="text-slate-400 hover:text-slate-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                 </button>
+              </div>
+              
+              <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                 <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Title</label>
+                    <input [(ngModel)]="newDecision.title" type="text" placeholder="e.g., Pivot to B2B" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none">
+                 </div>
+
+                 <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Impact</label>
+                        <select [(ngModel)]="newDecision.impact" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none bg-white">
+                           <option value="HIGH">High</option>
+                           <option value="MEDIUM">Medium</option>
+                           <option value="LOW">Low</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Status</label>
+                        <select [(ngModel)]="newDecision.status" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none bg-white">
+                           <option value="DRAFT">Draft</option>
+                           <option value="PENDING">Pending</option>
+                           <option value="DECIDED">Decided</option>
+                        </select>
+                    </div>
+                 </div>
+
+                 <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Context</label>
+                    <textarea [(ngModel)]="newDecision.context" rows="3" placeholder="What is the problem or opportunity?" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none resize-none"></textarea>
+                 </div>
+
+                 <div *ngIf="newDecision.status === 'DECIDED'">
+                    <label class="block text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">The Choice</label>
+                    <textarea [(ngModel)]="newDecision.choice" rows="2" placeholder="What was decided?" class="w-full px-4 py-2.5 rounded-xl border border-indigo-100 bg-indigo-50/30 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none resize-none"></textarea>
+                 </div>
+
+                 <div *ngIf="newDecision.status === 'DECIDED'">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Rationale</label>
+                    <textarea [(ngModel)]="newDecision.rationale" rows="2" placeholder="Why this choice?" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none resize-none"></textarea>
+                 </div>
+                 
+                 <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Tags (comma separated)</label>
+                    <input type="text" placeholder="pivot, financial, strategy" (change)="updateTags($any($event).target.value)" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none">
+                 </div>
+              </div>
+
+              <div class="p-6 bg-slate-50 border-t border-slate-100 flex justify-end space-x-3">
+                 <button (click)="closeModal()" class="px-6 py-2.5 rounded-xl text-slate-600 hover:text-slate-800 font-medium transition-colors">Cancel</button>
+                 <button (click)="saveDecision()" 
+                         [disabled]="!isValid()"
+                         class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all shadow-lg shadow-indigo-200 disabled:opacity-50 disabled:shadow-none">
+                    Save Decision
+                 </button>
+              </div>
+           </div>
+        </div>
 
         <div class="relative pl-8 space-y-12 before:absolute before:inset-0 before:ml-5 before:h-full before:w-0.5 before:-translate-x-px before:bg-slate-200 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
           
@@ -103,14 +171,14 @@ import { Observable } from 'rxjs';
                 <div class="md:col-span-1">
                    <h4 class="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2">The Choice</h4>
                    <p class="text-sm font-medium text-slate-800 leading-relaxed bg-indigo-50/50 p-3 rounded-lg border border-indigo-50">
-                     {{ decision.choice }}
+                     {{ decision.choice || 'No choice recorded yet.' }}
                    </p>
                 </div>
 
                 <div class="md:col-span-1">
                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Rationale</h4>
                    <p class="text-sm text-slate-600 leading-relaxed italic">
-                     "{{ decision.rationale }}"
+                     "{{ decision.rationale || 'No rationale recorded yet.' }}"
                    </p>
                 </div>
 
@@ -128,6 +196,10 @@ import { Observable } from 'rxjs';
 export class DecisionsPageComponent implements OnInit {
   decisions$!: Observable<Decision[]>;
 
+  // Modal State
+  isModalOpen = false;
+  newDecision: Partial<Decision> = this.getEmptyDecision();
+
   // Simple local state for analysis results
   analysisResults: { [key: string]: string } = {};
   analyzingIds: { [key: string]: boolean } = {};
@@ -138,7 +210,50 @@ export class DecisionsPageComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.loadDecisions();
+  }
+
+  loadDecisions() {
     this.decisions$ = this.decisionsService.getDecisions();
+  }
+
+  openModal() {
+    this.isModalOpen = true;
+    this.newDecision = this.getEmptyDecision();
+  }
+
+  closeModal() {
+    this.isModalOpen = false;
+  }
+
+  getEmptyDecision(): Partial<Decision> {
+    return {
+      title: '',
+      impact: 'MEDIUM',
+      status: 'PENDING',
+      context: '',
+      choice: '',
+      rationale: '',
+      tags: [],
+      date: new Date()
+    };
+  }
+
+  updateTags(tagsStr: string) {
+    this.newDecision.tags = tagsStr.split(',').map(t => t.trim()).filter(t => t !== '');
+  }
+
+  isValid(): boolean {
+    return !!(this.newDecision.title && this.newDecision.context);
+  }
+
+  saveDecision() {
+    if (!this.isValid()) return;
+
+    this.decisionsService.createDecision(this.newDecision).subscribe(() => {
+      this.loadDecisions();
+      this.closeModal();
+    });
   }
 
   analyzeDecision(id: string, context: string) {

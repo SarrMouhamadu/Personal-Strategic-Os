@@ -1,5 +1,6 @@
 const Joi = require('joi');
-const dbService = require('../services/db.service');
+const db = require('../models');
+const Decision = db.decisions;
 
 const decisionSchema = Joi.object({
     title: Joi.string().min(3).required(),
@@ -11,18 +12,17 @@ const decisionSchema = Joi.object({
     tags: Joi.array().items(Joi.string()).optional()
 });
 
-exports.getDecisions = (req, res, next) => {
+exports.getDecisions = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const decisions = dbService.read('decisions.json');
-        const userDecisions = decisions.filter(d => d.userId === userId);
-        res.json(userDecisions);
+        const decisions = await Decision.findAll({ where: { userId } });
+        res.json(decisions);
     } catch (error) {
         next(error);
     }
 };
 
-exports.createDecision = (req, res, next) => {
+exports.createDecision = async (req, res, next) => {
     try {
         const { error } = decisionSchema.validate(req.body);
         if (error) {
@@ -33,17 +33,14 @@ exports.createDecision = (req, res, next) => {
 
         const userId = req.user.id;
         const decisionData = req.body;
-        const decisions = dbService.read('decisions.json');
 
-        const newDecision = {
+        const newDecision = await Decision.create({
             ...decisionData,
             id: Date.now().toString(),
             userId,
             date: decisionData.date || new Date().toISOString()
-        };
+        });
 
-        decisions.push(newDecision);
-        dbService.write('decisions.json', decisions);
         res.status(201).json(newDecision);
     } catch (error) {
         next(error);

@@ -1,5 +1,6 @@
 const Joi = require('joi');
-const dbService = require('../services/db.service');
+const db = require('../models');
+const Scenario = db.scenarios;
 
 const scenarioSchema = Joi.object({
     projectId: Joi.string().required(),
@@ -9,18 +10,17 @@ const scenarioSchema = Joi.object({
     tags: Joi.array().items(Joi.string()).optional()
 });
 
-exports.getScenariosByProject = (req, res, next) => {
+exports.getScenariosByProject = async (req, res, next) => {
     try {
         const { projectId } = req.params;
-        const scenarios = dbService.read('scenarios.json');
-        const projectScenarios = scenarios.filter(s => s.projectId === projectId);
-        res.json(projectScenarios);
+        const scenarios = await Scenario.findAll({ where: { projectId } });
+        res.json(scenarios);
     } catch (error) {
         next(error);
     }
 };
 
-exports.createScenario = (req, res, next) => {
+exports.createScenario = async (req, res, next) => {
     try {
         const { error } = scenarioSchema.validate(req.body);
         if (error) {
@@ -31,36 +31,31 @@ exports.createScenario = (req, res, next) => {
 
         const userId = req.user.id;
         const scenarioData = req.body;
-        const scenarios = dbService.read('scenarios.json');
 
-        const newScenario = {
+        const newScenario = await Scenario.create({
             ...scenarioData,
             id: Date.now().toString(),
-            userId,
-            createdAt: new Date().toISOString()
-        };
+            userId
+        });
 
-        scenarios.push(newScenario);
-        dbService.write('scenarios.json', scenarios);
         res.status(201).json(newScenario);
     } catch (error) {
         next(error);
     }
 };
 
-exports.deleteScenario = (req, res, next) => {
+exports.deleteScenario = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const scenarios = dbService.read('scenarios.json');
-        const filtered = scenarios.filter(s => s.id !== id);
-
-        if (scenarios.length === filtered.length) {
+        
+        const scenario = await Scenario.findByPk(id);
+        if (!scenario) {
             const err = new Error('Scenario not found');
             err.statusCode = 404;
             throw err;
         }
 
-        dbService.write('scenarios.json', filtered);
+        await scenario.destroy();
         res.json({ message: 'Scenario deleted' });
     } catch (error) {
         next(error);

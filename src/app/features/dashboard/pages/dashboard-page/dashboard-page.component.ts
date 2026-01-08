@@ -166,6 +166,23 @@ import { Observable } from 'rxjs';
           <!-- Right Column (1/3) -->
           <div class="lg:col-span-1 space-y-8">
             
+            <!-- Projects Pipeline Summary -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mb-8" *ngIf="pipeline$ | async as pipeline">
+               <h2 class="text-lg font-bold text-slate-900 mb-6">Projects Pipeline</h2>
+               <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div *ngFor="let status of ['IDEATION', 'BUILD', 'DEPLOYED', 'GROWTH']" class="p-3 rounded-xl border border-slate-50 bg-slate-50/50">
+                     <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{{ status }}</div>
+                     <div class="text-2xl font-bold" 
+                          [ngClass]="{
+                             'text-slate-600': status === 'IDEATION',
+                             'text-blue-600': status === 'BUILD',
+                             'text-purple-600': status === 'DEPLOYED',
+                             'text-emerald-600': status === 'GROWTH'
+                          }">{{ pipeline[status] || 0 }}</div>
+                  </div>
+               </div>
+            </div>
+
             <!-- Impact Radar (US-20) -->
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
               <h2 class="text-lg font-bold text-slate-900 mb-6">Impact Radar</h2>
@@ -234,6 +251,7 @@ export class DashboardPageComponent implements OnInit {
   activity$!: Observable<Activity[]>;
   financials$!: Observable<any>;
   annualSummary$!: Observable<AnnualSummary | undefined>;
+  pipeline$!: Observable<{ [status: string]: number }>;
 
   constructor(
     private dashboardService: DashboardService,
@@ -246,5 +264,6 @@ export class DashboardPageComponent implements OnInit {
     this.activity$ = this.dashboardService.getRecentActivity();
     this.financials$ = this.dashboardService.getFinancialSnapshot();
     this.annualSummary$ = this.analyticsService.getAnnualSummary();
+    this.pipeline$ = this.dashboardService.getProjectsPipelineStats();
   }
 }

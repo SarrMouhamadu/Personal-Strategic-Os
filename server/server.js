@@ -21,9 +21,25 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const compression = require('compression');
 const errorHandler = require('./middleware/error.middleware');
+const sequelize = require('./config/db.config');
+const db = require('./models');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Initialize Database
+sequelize.authenticate()
+    .then(() => {
+        console.log('Database connection has been established successfully.');
+        // Sync models
+        return db.sequelize.sync({ alter: true }); // alter: true updates tables if they exist
+    })
+    .then(() => {
+        console.log('Database synchronized');
+    })
+    .catch(err => {
+        console.error('Unable to connect to the database:', err);
+    });
 
 // Security & Performance Middleware
 app.use(helmet());

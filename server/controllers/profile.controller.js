@@ -1,5 +1,6 @@
 const Joi = require('joi');
-const dbService = require('../services/db.service');
+const db = require('../models');
+const Profile = db.profiles;
 
 const profileSchema = Joi.object({
     fullName: Joi.string().min(2).required(),
@@ -10,16 +11,17 @@ const profileSchema = Joi.object({
     socialLinks: Joi.object().optional()
 });
 
-exports.getProfile = (req, res, next) => {
+exports.getProfile = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const profiles = dbService.read('profiles.json');
-        const profile = profiles.find(p => p.userId === userId);
+        const profile = await Profile.findOne({ where: { userId } });
 
         if (!profile) {
+            // Get the user's name from the User model
+            const user = await db.users.findByPk(userId);
             return res.json({
                 userId,
-                fullName: 'New User',
+                fullName: user ? user.name : 'New User',
                 tagline: '',
                 bio: '',
                 roles: [],
@@ -33,7 +35,7 @@ exports.getProfile = (req, res, next) => {
     }
 };
 
-exports.updateProfile = (req, res, next) => {
+exports.updateProfile = async (req, res, next) => {
     try {
         const { error } = profileSchema.validate(req.body);
         if (error) {
@@ -44,19 +46,20 @@ exports.updateProfile = (req, res, next) => {
 
         const userId = req.user.id;
         const profileData = req.body;
-        const profiles = dbService.read('profiles.json');
 
-        const index = profiles.findIndex(p => p.userId === userId);
-        const updatedProfile = { ...profileData, userId };
-
-        if (index !== -1) {
-            profiles[index] = updatedProfile;
+        let profile = await Profile.findOne({ where: { userId } });
+        
+        if (profile) {
+            await profile.update(profileData);
         } else {
-            profiles.push(updatedProfile);
+            profile = await Profile.create({
+                ...profileData,
+                id: Date.now().toString(),
+                userId
+            });
         }
 
-        dbService.write('profiles.json', profiles);
-        res.json(updatedProfile);
+        res.json(profile);
     } catch (error) {
         next(error);
     }

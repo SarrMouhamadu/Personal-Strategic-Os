@@ -1,5 +1,6 @@
 const Joi = require('joi');
-const dbService = require('../services/db.service');
+const db = require('../models');
+const Contact = db.contacts;
 
 const contactSchema = Joi.object({
     name: Joi.string().min(2).required(),
@@ -18,18 +19,17 @@ const interactionSchema = Joi.object({
     summary: Joi.string().required()
 });
 
-exports.getAllContacts = (req, res, next) => {
+exports.getAllContacts = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const contacts = dbService.read('contacts.json');
-        const userContacts = contacts.filter(c => c.userId === userId);
-        res.json(userContacts);
+        const contacts = await Contact.findAll({ where: { userId } });
+        res.json(contacts);
     } catch (error) {
         next(error);
     }
 };
 
-exports.createContact = (req, res, next) => {
+exports.createContact = async (req, res, next) => {
     try {
         const { error } = contactSchema.validate(req.body);
         if (error) {
@@ -40,66 +40,59 @@ exports.createContact = (req, res, next) => {
 
         const userId = req.user.id;
         const contactData = req.body;
-        const contacts = dbService.read('contacts.json');
 
-        const newContact = {
+        const newContact = await Contact.create({
             ...contactData,
             id: Date.now().toString(),
             userId,
-            interactions: contactData.interactions || [],
-            createdAt: new Date().toISOString()
-        };
+            interactions: contactData.interactions || []
+        });
 
-        contacts.push(newContact);
-        dbService.write('contacts.json', contacts);
         res.status(201).json(newContact);
     } catch (error) {
         next(error);
     }
 };
 
-exports.updateContact = (req, res, next) => {
+exports.updateContact = async (req, res, next) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
-        const contacts = dbService.read('contacts.json');
 
-        const index = contacts.findIndex(c => c.id === id && c.userId === userId);
-        if (index === -1) {
+        const contact = await Contact.findOne({ where: { id, userId } });
+        if (!contact) {
             const err = new Error('Contact not found');
             err.statusCode = 404;
             throw err;
         }
 
-        const { error } = contactSchema.validate({ ...contacts[index], ...req.body });
+        const { error } = contactSchema.validate({ ...contact.toJSON(), ...req.body });
         if (error) {
             const err = new Error(error.details[0].message);
             err.statusCode = 400;
             throw err;
         }
 
-        contacts[index] = { ...contacts[index], ...req.body };
-        dbService.write('contacts.json', contacts);
-        res.json(contacts[index]);
+        await contact.update(req.body);
+        res.json(contact);
     } catch (error) {
         next(error);
     }
 };
 
-exports.deleteContact = (req, res, next) => {
+exports.deleteContact = async (req, res, next) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
-        const contacts = dbService.read('contacts.json');
-        const filtered = contacts.filter(c => !(c.id === id && c.userId === userId));
-
-        if (contacts.length === filtered.length) {
+        
+        const contact = await Contact.findOne({ where: { userId } });
+        if (!contact) {
             const err = new Error('Contact not found');
             err.statusCode = 404;
             throw err;
         }
 
-        dbService.write('contacts.json', filtered);
+        await contact.destroy();
         res.json({ message: 'Contact deleted' });
     } catch (error) {
         next(error);
@@ -107,7 +100,7 @@ exports.deleteContact = (req, res, next) => {
 };
 
 // Interaction History
-exports.addInteraction = (req, res, next) => {
+exports.addInteraction = async (req, res, next) => {
     try {
         const { error } = interactionSchema.validate(req.body);
         if (error) {
@@ -119,10 +112,9 @@ exports.addInteraction = (req, res, next) => {
         const userId = req.user.id;
         const { id } = req.params;
         const interactionData = req.body;
-        const contacts = dbService.read('contacts.json');
 
-        const index = contacts.findIndex(c => c.id === id && c.userId === userId);
-        if (index === -1) {
+        const contact = await Contact.findOne({ where: { id, userId } });
+        if (!contact) {
             const err = new Error('Contact not found');
             err.statusCode = 404;
             throw err;
@@ -133,10 +125,14 @@ exports.addInteraction = (req, res, next) => {
             id: Date.now().toString()
         };
 
-        contacts[index].interactions.push(newInteraction);
-        contacts[index].lastInteraction = newInteraction.date;
+        const interactions = contact.interactions || [];
+        interactions.push(newInteraction);
+        
+        await contact.update({ 
+            interactions,
+            lastInteraction: newInteraction.date
+        });
 
-        dbService.write('contacts.json', contacts);
         res.status(201).json(newInteraction);
     } catch (error) {
         next(error);
