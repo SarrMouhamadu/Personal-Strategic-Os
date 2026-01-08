@@ -14,17 +14,13 @@ import { Observable } from 'rxjs';
     <div class="min-h-screen bg-slate-50 text-slate-800 p-6">
       <div class="container mx-auto max-w-7xl">
         
-        <header class="flex justify-between items-center mb-10">
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
           <div>
-            <h1 class="text-3xl font-bold text-slate-900">Strategic Network</h1>
-            <p class="text-slate-500 mt-2">Gérez vos relations clés et transformez-les en opportunités.</p>
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Strategic Network</h1>
+            <p class="text-slate-500 mt-1">Gérez vos relations clés et transformez-les en opportunités.</p>
           </div>
           <div class="flex space-x-3">
-             <button routerLink="/opportunities" class="bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 px-5 py-2.5 rounded-lg font-medium shadow-sm transition-colors flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                Pipeline
-             </button>
-             <button (click)="openModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-sm transition-colors flex items-center">
+             <button (click)="openModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-100 transition-all flex items-center text-sm active:scale-95">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 Add Contact
              </button>

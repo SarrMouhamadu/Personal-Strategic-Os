@@ -14,13 +14,13 @@ import { Observable, map, BehaviorSubject, switchMap, shareReplay } from 'rxjs';
     <div class="min-h-screen bg-slate-50 text-slate-800 p-6 overflow-x-auto">
       <div class="min-w-[1200px] mx-auto">
         
-        <header class="flex justify-between items-center mb-8">
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
           <div>
-            <h1 class="text-3xl font-bold text-slate-900">Projects Pipeline</h1>
-            <p class="text-slate-500 mt-2">Vue Kanban pour prioriser l'exécution.</p>
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Projects Pipeline</h1>
+            <p class="text-slate-500 mt-1">Vue Kanban pour prioriser l'exécution.</p>
           </div>
-          <button (click)="showModal = true" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-sm transition-all hover:shadow-md flex items-center active:scale-95">
-             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          <button (click)="showModal = true" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-100 transition-all flex items-center text-sm active:scale-95">
+             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
              New Project
           </button>
         </header>

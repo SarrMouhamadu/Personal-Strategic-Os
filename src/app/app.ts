@@ -16,46 +16,32 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
             <span class="font-bold text-slate-800 text-lg">Personal Strategic OS</span>
           </div>
 
-          <div class="flex space-x-1">
+          <div class="flex space-x-1 text-sm">
             <a routerLink="/dashboard" 
                routerLinkActive="bg-indigo-50 text-indigo-700 font-medium" 
                class="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors">
                Dashboard
             </a>
-            <a routerLink="/identity" 
-               routerLinkActive="bg-indigo-50 text-indigo-700 font-medium" 
-               class="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors">
-               Identity
+            <a routerLink="/projects" 
+               routerLinkActive="bg-purple-50 text-purple-700 font-medium" 
+               class="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-purple-600 transition-colors">
+               Pipeline
             </a>
             <a routerLink="/goals" 
                routerLinkActive="bg-emerald-50 text-emerald-700 font-medium" 
                class="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-emerald-600 transition-colors">
-               Goals
-            </a>
-            <a routerLink="/decisions" 
-               routerLinkActive="bg-blue-50 text-blue-700 font-medium" 
-               class="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors">
-               Decisions
-            </a>
-            <a routerLink="/projects" 
-               routerLinkActive="bg-purple-50 text-purple-700 font-medium" 
-               class="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-purple-600 transition-colors">
-               Projects
-            </a>
-            <a routerLink="/finance" 
-               routerLinkActive="bg-emerald-50 text-emerald-700 font-medium" 
-               class="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-emerald-600 transition-colors">
-               Finance
+               Objectives
             </a>
             <a routerLink="/network" 
                routerLinkActive="bg-pink-50 text-pink-700 font-medium" 
                class="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-pink-600 transition-colors">
                Network
             </a>
-            <a routerLink="/knowledge" 
-               routerLinkActive="bg-amber-50 text-amber-700 font-medium" 
-               class="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-amber-600 transition-colors">
-               Library
+            <div class="w-px h-6 bg-slate-200 mx-2 self-center"></div>
+            <a routerLink="/identity" 
+               routerLinkActive="bg-slate-100 text-slate-900 font-medium" 
+               class="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+               Profile
             </a>
           </div>
 

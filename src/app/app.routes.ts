@@ -22,11 +22,6 @@ export const routes: Routes = [
         canActivate: [authGuard]
     },
     {
-        path: 'decisions',
-        loadComponent: () => import('./features/decisions/pages/decisions-page/decisions-page.component').then(m => m.DecisionsPageComponent),
-        canActivate: [authGuard]
-    },
-    {
         path: 'projects',
         loadComponent: () => import('./features/projects/pages/projects-list-page/projects-list-page.component').then(m => m.ProjectsListPageComponent),
         canActivate: [authGuard]
@@ -37,11 +32,6 @@ export const routes: Routes = [
         canActivate: [authGuard]
     },
     {
-        path: 'finance',
-        loadComponent: () => import('./features/finance/pages/financial-simulator/financial-simulator.component').then(m => m.FinancialSimulatorComponent),
-        canActivate: [authGuard]
-    },
-    {
         path: 'network',
         loadComponent: () => import('./features/network/pages/network-page/network-page.component').then(m => m.NetworkPageComponent),
         canActivate: [authGuard]
@@ -49,16 +39,6 @@ export const routes: Routes = [
     {
         path: 'network/:id',
         loadComponent: () => import('./features/network/pages/contact-detail-page/contact-detail-page.component').then(m => m.ContactDetailPageComponent),
-        canActivate: [authGuard]
-    },
-    {
-        path: 'opportunities',
-        loadComponent: () => import('./features/network/pages/opportunities-pipeline/opportunities-pipeline.component').then(m => m.OpportunitiesPipelineComponent),
-        canActivate: [authGuard]
-    },
-    {
-        path: 'knowledge',
-        loadComponent: () => import('./features/knowledge/pages/library-page/library-page.component').then(m => m.LibraryPageComponent),
         canActivate: [authGuard]
     },
     { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
