@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const Joi = require('joi');
 const db = require('../models');
 const Project = db.projects;
@@ -108,7 +109,7 @@ exports.createProject = async (req, res, next) => {
 
         const newProject = await Project.create({
             ...projectData,
-            id: Date.now().toString(),
+            id: crypto.randomUUID(),
             userId
         });
 

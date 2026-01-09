@@ -1,10 +1,11 @@
+const crypto = require('crypto');
 const db = require('../models');
 const Audit = db.audits;
 
 const logAction = async (action, details, user = 'System') => {
     try {
         await Audit.create({
-            id: Date.now().toString(),
+            id: crypto.randomUUID(),
             timestamp: new Date(),
             userId: user,
             action,

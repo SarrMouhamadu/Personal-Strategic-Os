@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const Joi = require('joi');
 const db = require('../models');
 const Profile = db.profiles;
@@ -54,7 +55,7 @@ exports.updateProfile = async (req, res, next) => {
         } else {
             profile = await Profile.create({
                 ...profileData,
-                id: Date.now().toString(),
+                id: crypto.randomUUID(),
                 userId
             });
         }
@@ -79,7 +80,7 @@ exports.uploadAvatar = async (req, res, next) => {
             await profile.update({ avatarUrl });
         } else {
             profile = await Profile.create({
-                id: Date.now().toString(),
+                id: crypto.randomUUID(),
                 userId,
                 fullName: req.user.name || 'New User',
                 avatarUrl,

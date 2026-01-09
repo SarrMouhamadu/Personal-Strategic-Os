@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const Joi = require('joi');
 const db = require('../models');
 const Goal = db.goals;
@@ -44,7 +45,7 @@ exports.createGoal = async (req, res, next) => {
 
         const newGoal = await Goal.create({
             ...goalData,
-            id: Date.now().toString(),
+            id: crypto.randomUUID(),
             userId
         });
 

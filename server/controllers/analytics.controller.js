@@ -1,15 +1,21 @@
-const dbService = require('../services/db.service');
+const db = require('../models');
+const Project = db.projects;
+const Goal = db.goals;
+const Decision = db.decisions;
 
-exports.getAnnualSummary = (req, res) => {
+exports.getAnnualSummary = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const currentYear = new Date().getFullYear().toString();
+        const currentYear = new Date().getFullYear();
 
-        const projects = dbService.read('projects.json').filter(p => p.userId === userId);
-        const goals = dbService.read('goals.json').filter(g => g.userId === userId && g.year === currentYear);
-        const decisions = dbService.read('decisions.json').filter(d => d.userId === userId && d.date.startsWith(currentYear));
+        // Fetch all relevant data for the user in parallel
+        const [projects, goals, decisions] = await Promise.all([
+            Project.findAll({ where: { userId } }),
+            Goal.findAll({ where: { userId, year: currentYear } }),
+            Decision.findAll({ where: { userId } })
+        ]);
 
-        // Aggregate Impact
+        // Aggregate Impact from Projects
         const impactScores = {
             PERSONAL: { total: 0, count: 0 },
             SOCIAL: { total: 0, count: 0 },
@@ -41,22 +47,28 @@ exports.getAnnualSummary = (req, res) => {
             return acc;
         }, {});
 
+        // Goal Statistics
+        const completedGoals = goals.filter(g => g.status === 'COMPLETED').length;
+        const completionRate = goals.length > 0 
+            ? ((completedGoals / goals.length) * 100).toFixed(0) 
+            : 0;
+
         res.json({
-            year: currentYear,
+            year: currentYear.toString(),
             projects: {
                 total: projects.length,
-                activeCount: projects.filter(p => p.status !== 'ARCHIVED' && p.status !== 'COMPLETED').length,
+                activeCount: projects.filter(p => p.status !== 'ARCHIVED' && p.status !== 'DEPLOYED').length,
                 statusDistribution
             },
             impact: averageImpact,
             goals: {
                 total: goals.length,
-                completed: goals.filter(g => g.completed).length,
-                completionRate: goals.length > 0 ? (goals.filter(g => g.completed).length / goals.length * 100).toFixed(0) : 0
+                completed: completedGoals,
+                completionRate: completionRate
             },
             decisions: {
                 totalCount: decisions.length,
-                latest: decisions.slice(-3)
+                latest: decisions.slice(-3).reverse() // Most recent first
             }
         });
 

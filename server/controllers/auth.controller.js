@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
@@ -39,7 +40,7 @@ exports.register = async (req, res, next) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create user
-        const userId = Date.now().toString();
+        const userId = crypto.randomUUID();
         const newUser = await User.create({
             id: userId,
             email,
@@ -50,7 +51,7 @@ exports.register = async (req, res, next) => {
 
         // Auto-create Profile for the user
         await db.profiles.create({
-            id: Date.now().toString(),
+            id: crypto.randomUUID(),
             userId: userId,
             fullName: name,
             tagline: '',
