@@ -40,6 +40,11 @@ import { CommonModule } from '@angular/common';
                class="px-4 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-pink-600 dark:hover:text-pink-400 transition-all">
                Network
             </a>
+            <a routerLink="/audit" 
+               routerLinkActive="bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" 
+               class="px-4 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-amber-600 dark:hover:text-amber-400 transition-all">
+               Logs
+            </a>
             
             <div class="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-3"></div>
             
@@ -77,6 +82,7 @@ import { CommonModule } from '@angular/common';
             <a routerLink="/projects" (click)="isMenuOpen.set(false)" routerLinkActive="text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20" class="block px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 font-bold transition-all">Pipeline</a>
             <a routerLink="/goals" (click)="isMenuOpen.set(false)" routerLinkActive="text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20" class="block px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 font-bold transition-all">Objectives</a>
             <a routerLink="/network" (click)="isMenuOpen.set(false)" routerLinkActive="text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-900/20" class="block px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 font-bold transition-all">Network</a>
+            <a routerLink="/audit" (click)="isMenuOpen.set(false)" routerLinkActive="text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20" class="block px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 font-bold transition-all">System Logs</a>
             <div class="border-t border-slate-100 dark:border-slate-800 my-2"></div>
             <a routerLink="/identity" (click)="isMenuOpen.set(false)" routerLinkActive="text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800" class="block px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 font-bold transition-all">Profile</a>
           </div>

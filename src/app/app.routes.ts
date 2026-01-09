@@ -41,6 +41,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/network/pages/contact-detail-page/contact-detail-page.component').then(m => m.ContactDetailPageComponent),
         canActivate: [authGuard]
     },
+    {
+        path: 'audit',
+        loadComponent: () => import('./features/identity/pages/audit-logs/audit-logs.component').then(m => m.AuditLogsComponent),
+        canActivate: [authGuard]
+    },
     { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     { path: '**', redirectTo: 'dashboard' }
 ];
