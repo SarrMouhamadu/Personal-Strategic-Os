@@ -136,12 +136,12 @@ export class LoginPageComponent {
         lastName: this.lastName 
       }).subscribe({
         next: (res) => {
-          if (res) {
-            this.isLogin.set(true);
-            this.errorMessage.set('Compte créé ! Connectez-vous.');
-          } else {
-            this.errorMessage.set('Erreur lors de la création du compte.');
-          }
+          this.isLogin.set(true);
+          this.errorMessage.set('Compte créé ! Connectez-vous.');
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.errorMessage.set(err.error?.message || 'Erreur lors de la création du compte.');
           this.loading.set(false);
         }
       });

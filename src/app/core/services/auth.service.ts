@@ -46,7 +46,7 @@ export class AuthService {
         return this.http.post(`${this.authUrl}/register`, userData).pipe(
             catchError(err => {
                 console.error('Registration failed', err);
-                return of(null);
+                throw err;
             })
         );
     }

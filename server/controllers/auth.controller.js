@@ -33,7 +33,8 @@ exports.register = async (req, res, next) => {
         // Check if user exists
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
+            console.log(`[Auth Register] User already exists: ${email}`);
+            return res.status(400).json({ message: 'Cet utilisateur existe déjà.' });
         }
 
         // Hash password
@@ -41,6 +42,7 @@ exports.register = async (req, res, next) => {
 
         // Create user
         const userId = crypto.randomUUID();
+        console.log(`[Auth Register] Creating user: ${userId}`);
         const newUser = await User.create({
             id: userId,
             email,
@@ -50,6 +52,7 @@ exports.register = async (req, res, next) => {
         });
 
         // Auto-create Profile for the user
+        console.log(`[Auth Register] Creating profile for: ${userId}`);
         await db.profiles.create({
             id: crypto.randomUUID(),
             userId: userId,
@@ -60,8 +63,10 @@ exports.register = async (req, res, next) => {
             skills: []
         });
 
+        console.log(`[Auth Register] Success: ${email}`);
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
+        console.error(`[Auth Register] Error: ${error.message}`, error);
         next(error);
     }
 };
