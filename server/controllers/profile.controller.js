@@ -64,3 +64,32 @@ exports.updateProfile = async (req, res, next) => {
         next(error);
     }
 };
+
+exports.uploadAvatar = async (req, res, next) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'Aucun fichier n\'a été téléchargé' });
+        }
+
+        const userId = req.user.id;
+        const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+
+        let profile = await Profile.findOne({ where: { userId } });
+        if (profile) {
+            await profile.update({ avatarUrl });
+        } else {
+            profile = await Profile.create({
+                id: Date.now().toString(),
+                userId,
+                fullName: req.user.name || 'New User',
+                avatarUrl,
+                roles: [],
+                skills: []
+            });
+        }
+
+        res.json({ avatarUrl, profile });
+    } catch (error) {
+        next(error);
+    }
+};
