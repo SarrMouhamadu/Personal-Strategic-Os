@@ -44,8 +44,17 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray } fr
           </div>
 
           <div class="mt-8 lg:mt-0 lg:ml-8 flex flex-col items-center space-y-4">
-             <div class="h-32 w-32 rounded-3xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-3xl font-bold border-4 border-white dark:border-slate-800 shadow-xl transition-transform hover:scale-105">
-                {{ profile.fullName.charAt(0) }}
+             <div class="relative group">
+                <div class="h-32 w-32 rounded-3xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-3xl font-bold border-4 border-white dark:border-slate-800 shadow-xl transition-transform hover:scale-105 overflow-hidden">
+                   <img *ngIf="profile.avatarUrl" [src]="profile.avatarUrl" class="h-full w-full object-cover">
+                   <span *ngIf="!profile.avatarUrl">{{ profile.fullName.charAt(0) }}</span>
+                </div>
+                
+                <!-- Upload Overlay -->
+                <label class="absolute inset-0 flex items-center justify-center bg-black/40 text-white rounded-3xl opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity backdrop-blur-sm">
+                   <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                   <input type="file" class="hidden" (change)="onFileSelected($event)" accept="image/*">
+                </label>
              </div>
              
              <div class="flex gap-2">
@@ -338,5 +347,25 @@ export class ProfilePageComponent implements OnInit {
     this.authService.updateRole(role).subscribe({
       next: () => this.loadProfile()
     });
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('La photo est trop lourde (Max 2Mo)');
+        return;
+      }
+
+      this.identityService.uploadAvatar(file).subscribe({
+        next: (res) => {
+          this.loadProfile();
+        },
+        error: (err) => {
+          console.error('Upload failed', err);
+          alert('Erreur lors du téléchargement');
+        }
+      });
+    }
   }
 }

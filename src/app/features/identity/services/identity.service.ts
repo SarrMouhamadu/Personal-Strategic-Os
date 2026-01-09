@@ -28,4 +28,13 @@ export class IdentityService {
             headers: { 'Authorization': `Bearer ${this.auth.token()}` }
         });
     }
+
+    uploadAvatar(file: File): Observable<any> {
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        return this.http.post(`${this.apiUrl}/avatar`, formData, {
+            headers: { 'Authorization': `Bearer ${this.auth.token()}` }
+        });
+    }
 }

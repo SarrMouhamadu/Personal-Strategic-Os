@@ -28,6 +28,9 @@ module.exports = (sequelize, Sequelize) => {
         userId: {
             type: Sequelize.STRING,
             unique: true
+        },
+        avatarUrl: {
+            type: Sequelize.STRING
         }
     });
 

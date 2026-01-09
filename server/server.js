@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 require('dotenv').config();
@@ -65,6 +66,7 @@ console.log('[Server] Rate limiting DISABLED for development');
 
 app.use(bodyParser.json());
 app.use(morgan('dev'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);
