@@ -40,10 +40,17 @@ import { AuthService } from '../../../../core/services/auth.service';
           </div>
 
           <form (submit)="onSubmit()" class="space-y-5">
-            <div *ngIf="!isLogin()" class="animate-fade-in-down">
-              <label class="block text-xs font-bold text-accent-200 uppercase tracking-widest mb-2 ml-1">Nom Complet</label>
-              <input type="text" [(ngModel)]="name" name="name" required
-                     class="w-full bg-white/5 border-2 border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-accent focus:bg-white/10 transition-all duration-300">
+            <div *ngIf="!isLogin()" class="flex gap-4 animate-fade-in-down">
+              <div class="flex-1">
+                <label class="block text-xs font-bold text-accent-200 uppercase tracking-widest mb-2 ml-1">Prénom</label>
+                <input type="text" [(ngModel)]="firstName" name="firstName" required
+                       class="w-full bg-white/5 border-2 border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-accent focus:bg-white/10 transition-all duration-300">
+              </div>
+              <div class="flex-1">
+                <label class="block text-xs font-bold text-accent-200 uppercase tracking-widest mb-2 ml-1">Nom</label>
+                <input type="text" [(ngModel)]="lastName" name="lastName" required
+                       class="w-full bg-white/5 border-2 border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-accent focus:bg-white/10 transition-all duration-300">
+              </div>
             </div>
 
             <div class="animate-fade-in-down" style="animation-delay: 0.1s;">
@@ -99,7 +106,8 @@ export class LoginPageComponent {
 
   email = '';
   password = '';
-  name = '';
+  firstName = '';
+  lastName = '';
 
   onSubmit() {
     this.loading.set(true);
@@ -121,7 +129,12 @@ export class LoginPageComponent {
         }
       });
     } else {
-      this.authService.register({ email: this.email, password: this.password, name: this.name }).subscribe({
+      this.authService.register({ 
+        email: this.email, 
+        password: this.password, 
+        firstName: this.firstName, 
+        lastName: this.lastName 
+      }).subscribe({
         next: (res) => {
           if (res) {
             this.isLogin.set(true);

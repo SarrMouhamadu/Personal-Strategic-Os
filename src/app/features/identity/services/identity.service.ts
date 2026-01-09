@@ -10,7 +10,7 @@ import { AuthService } from '../../../core/services/auth.service';
 export class IdentityService {
     private http = inject(HttpClient);
     private auth = inject(AuthService);
-    private readonly apiUrl = 'http://localhost:3000/api/profile';
+    private readonly apiUrl = '/api/profile';
 
     getProfile(): Observable<Profile> {
         return this.http.get<Profile>(this.apiUrl, {

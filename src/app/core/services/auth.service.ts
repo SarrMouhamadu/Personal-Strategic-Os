@@ -21,8 +21,8 @@ export interface AuthResponse {
 export class AuthService {
     private http = inject(HttpClient);
     private router = inject(Router);
-    private readonly authUrl = 'http://localhost:3000/api/auth';
-    private readonly usersUrl = 'http://localhost:3000/api/users';
+    private readonly authUrl = '/api/auth';
+    private readonly usersUrl = '/api/users';
 
     // App state
     currentUser = signal<User | null>(this.getStoredUser());

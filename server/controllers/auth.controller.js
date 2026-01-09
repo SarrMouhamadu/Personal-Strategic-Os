@@ -8,7 +8,8 @@ const User = db.users;
 const registerSchema = Joi.object({
     email: Joi.string().email().required(),
     password: Joi.string().min(8).required(),
-    name: Joi.string().min(2).required()
+    firstName: Joi.string().min(2).required(),
+    lastName: Joi.string().min(2).required()
 });
 
 const loginSchema = Joi.object({
@@ -25,7 +26,8 @@ exports.register = async (req, res, next) => {
             throw err;
         }
 
-        const { email, password, name } = req.body;
+        const { email, password, firstName, lastName } = req.body;
+        const name = `${firstName} ${lastName}`;
 
         // Check if user exists
         const existingUser = await User.findOne({ where: { email } });
@@ -37,12 +39,24 @@ exports.register = async (req, res, next) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create user
+        const userId = Date.now().toString();
         const newUser = await User.create({
-            id: Date.now().toString(),
+            id: userId,
             email,
             password: hashedPassword,
             name,
             role: 'PRIVATE'
+        });
+
+        // Auto-create Profile for the user
+        await db.profiles.create({
+            id: Date.now().toString(),
+            userId: userId,
+            fullName: name,
+            tagline: '',
+            bio: '',
+            roles: [],
+            skills: []
         });
 
         res.status(201).json({ message: 'User registered successfully' });
