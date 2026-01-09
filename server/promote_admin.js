@@ -5,7 +5,7 @@ async function promote() {
     try {
         const result = await User.update(
             { role: 'ADMIN' },
-            { where: { email: 'muhamadusarr9@gmail.com' } }
+            { where: { email: 'mouhamadou.sarr4@unchk.edu.sn' } }
         );
         if (result[0] > 0) {
             console.log('SUCCESS: User muhamadusarr9@gmail.com promoted to ADMIN.');

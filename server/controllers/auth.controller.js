@@ -76,24 +76,36 @@ exports.login = async (req, res, next) => {
         }
 
         const { email, password } = req.body;
+        console.log(`[Auth] Login attempt for: ${email}`);
 
         const user = await User.findOne({ where: { email } });
         if (!user) {
+            console.log(`[Auth] User not found: ${email}`);
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
         // Verify password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+            console.log(`[Auth] Password mismatch for: ${email}`);
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
+        console.log(`[Auth] Password verified for: ${email}`);
+
         // Generate JWT
+        if (!process.env.JWT_SECRET) {
+            console.error('[Critical] JWT_SECRET is not defined!');
+            throw new Error('Server configuration error');
+        }
+
         const token = jwt.sign(
             { id: user.id, email: user.email, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
+
+        console.log(`[Auth] Token generated for: ${email}`);
 
         res.json({
             token,

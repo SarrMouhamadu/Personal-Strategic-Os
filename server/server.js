@@ -29,19 +29,27 @@ const db = require('./models');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Initialize Database
-sequelize.authenticate()
-    .then(() => {
-        console.log('Database connection has been established successfully.');
-        // Sync models
-        return db.sequelize.sync({ alter: true }); // alter: true updates tables if they exist
-    })
-    .then(() => {
-        console.log('Database synchronized');
-    })
-    .catch(err => {
-        console.error('Unable to connect to the database:', err);
-    });
+// Initialize Database with Retry Logic
+const initDb = async (retries = 5) => {
+    while (retries > 0) {
+        try {
+            await sequelize.authenticate();
+            console.log('Database connection has been established successfully.');
+            await db.sequelize.sync({ alter: true });
+            console.log('Database synchronized');
+            return;
+        } catch (err) {
+            console.error(`Unable to connect to the database (Retries left: ${retries - 1}):`, err.message);
+            retries -= 1;
+            // Wait 5 seconds before retrying
+            await new Promise(res => setTimeout(res, 5000));
+        }
+    }
+    console.error('CRITICAL: Could not connect to database after multiple attempts. Exiting...');
+    process.exit(1);
+};
+
+initDb();
 
 // Security & Performance Middleware
 app.use(helmet());
