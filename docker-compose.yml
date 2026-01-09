@@ -1,0 +1,36 @@
+services:
+  frontend:
+    build: .
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+
+  backend:
+    build: ./server
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=db
+      - DB_USER=psos_user
+      - DB_PASSWORD=psos_password
+      - DB_NAME=personal_strategic_os
+      - JWT_SECRET=your_super_secret_key
+    depends_on:
+      - db
+    restart: always
+
+  db:
+    image: mysql:8.0
+    environment:
+      - MYSQL_DATABASE=personal_strategic_os
+      - MYSQL_USER=psos_user
+      - MYSQL_PASSWORD=psos_password
+      - MYSQL_ROOT_PASSWORD=root_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: always
+
+volumes:
+  mysql_data:
