@@ -82,7 +82,7 @@ import { AuthService } from '../../../../core/services/auth.service';
         </div>
 
         <p class="text-center text-accent-300/60 mt-8 text-sm">
-          &copy; 2026 Strategic OS. Sécurité par JWT & Bcrypt.
+          Développé et déployé par Mouhamadou Sarr <span class="block text-xs mt-1">sarrmahmoud232@gmail.com</span>
         </p>
       </div>
     </div>

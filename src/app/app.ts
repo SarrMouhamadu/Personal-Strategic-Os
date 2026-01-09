@@ -68,7 +68,7 @@ import { CommonModule } from '@angular/common';
       <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-8 transition-colors">
         <div class="container mx-auto px-12 flex flex-col md:flex-row justify-between items-center gap-4">
           <div class="flex items-center space-x-2">
-            <span class="text-slate-400 dark:text-slate-500 text-sm font-medium">Développé par</span>
+            <span class="text-slate-400 dark:text-slate-500 text-sm font-medium">Développé et déployé par</span>
             <span class="text-slate-900 dark:text-white font-bold tracking-tight">Mouhamadou Sarr</span>
           </div>
           
