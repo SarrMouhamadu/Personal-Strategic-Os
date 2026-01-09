@@ -17,6 +17,7 @@ const auditLogRoutes = require('./routes/audit.routes');
 const analyticsRoutes = require('./routes/analytics.routes');
 const knowledgeRoutes = require('./routes/knowledge.routes');
 const opportunityRoutes = require('./routes/opportunity.routes');
+const financeRoutes = require('./routes/finance.routes');
 
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -81,6 +82,7 @@ app.use('/api/audit', auditLogRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/knowledge', knowledgeRoutes);
 app.use('/api/opportunities', opportunityRoutes);
+app.use('/api/finance', financeRoutes);
 
 // Base route
 app.get('/', (req, res) => {

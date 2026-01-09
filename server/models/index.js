@@ -17,8 +17,11 @@ db.knowledge = require("./knowledge.model.js")(sequelize, Sequelize);
 db.opportunities = require("./opportunity.model.js")(sequelize, Sequelize);
 db.profiles = require("./profile.model.js")(sequelize, Sequelize);
 db.audits = require("./audit.model.js")(sequelize, Sequelize);
+db.expenses = require("./expense.model.js")(sequelize, Sequelize);
 
 // Relationships
+db.users.hasMany(db.expenses, { as: "expenses" });
+db.expenses.belongsTo(db.users, { foreignKey: "userId", as: "user" });
 db.users.hasMany(db.projects, { as: "projects" });
 db.projects.belongsTo(db.users, {
   foreignKey: "userId",
