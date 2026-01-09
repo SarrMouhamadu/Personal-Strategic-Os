@@ -7,7 +7,7 @@ export interface User {
     id: string;
     email: string;
     name: string;
-    role: 'PRIVATE' | 'PUBLIC' | 'INVESTOR';
+    role: 'PRIVATE' | 'PUBLIC' | 'INVESTOR' | 'ADMIN' | 'CSO';
 }
 
 export interface AuthResponse {
