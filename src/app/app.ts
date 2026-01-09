@@ -47,6 +47,11 @@ import { CommonModule } from '@angular/common';
                class="px-4 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-amber-600 dark:hover:text-amber-400 transition-all">
                Logs
             </a>
+            <a routerLink="/finance" 
+               routerLinkActive="bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" 
+               class="px-4 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all">
+               Finance
+            </a>
             
             <div class="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-3"></div>
             
